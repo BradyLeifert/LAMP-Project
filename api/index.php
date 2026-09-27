@@ -122,12 +122,12 @@ if ($method === 'POST') {
 $userId = requireAuth();
 
 switch($method){
-    case 'GET':
+    case 'GET': //search contacts
         $search = isset($_GET['q'])  ? trim($_GET['q'])  : (isset($_GET['search']) ? trim($_GET['search']) : null);
         if ($search !== null && $search !== '') {
             $like = '%' . $search . '%';
-            $stmt = $db->prepare('SELECT ID AS id, FirstName AS name, LastName AS lastname FROM Contacts WHERE UserID = :uid AND (FirstName LIKE :q OR LastName LIKE :q) ORDER BY FirstName');
-            $stmt->execute([':uid' => $userId, ':q' => $like]);
+            $stmt = $db->prepare('SELECT ID AS id, FirstName AS name, LastName AS lastname FROM Contacts WHERE UserID = :uid AND (FirstName LIKE :q OR LastName LIKE :l) ORDER BY FirstName');
+            $stmt->execute([':uid' => $userId, ':q' => $like, ':l' => $like]);
             $rows = $stmt->fetchAll();
             respond(200, ['contacts' => $rows, 'error' => '']);
         }
