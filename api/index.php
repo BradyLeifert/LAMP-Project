@@ -25,6 +25,9 @@ if ($method === 'GET' && (isset($_GET['ping']) || (isset($_GET['action']) && $_G
     respond(200, ['status' => 'OK', 'message' => 'Hello from contacts app API!', 'timestamp' => time()]);
 }
 
+
+//test hello hello hello
+
 // Login and Signup
 if ($method === 'POST') {
 
