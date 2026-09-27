@@ -25,9 +25,6 @@ if ($method === 'GET' && (isset($_GET['ping']) || (isset($_GET['action']) && $_G
     respond(200, ['status' => 'OK', 'message' => 'Hello from contacts app API!', 'timestamp' => time()]);
 }
 
-
-//test hello hello hello
-
 // Login and Signup
 if ($method === 'POST') {
 
@@ -120,6 +117,26 @@ if ($method === 'POST') {
     }
 
     respond(400, ['error' => 'Invalid request']);
+}
+
+$userId = requireAuth();
+
+switch($method){
+    case 'GET':
+        $search = isset($_GET['q'])  ? trim($_GET['q'])  : (isset($_GET['search']) ? trim($_GET['search']) : null);
+        if ($search !== null && $search !== '') {
+            $like = '%' . $search . '%';
+            $stmt = $db->prepare('SELECT ID as id, FirstName as name FROM Contacts WHERE UserID = :uid AND FirstName LIKE :q ORDER BY FirstName');
+            $stmt->execute([':uid' => $userId, ':q' => $like]);
+            $rows = $stmt->fetchAll();
+            $results = array_column($rows, 'name');
+            if (empty($results)) {
+                respond(200, ['results' => [], 'contacts' => [], 'error' => 'No Records Found']);
+            }
+            respond(200, ['results' => $results, 'contacts' => $rows, 'error' => '']);
+        }
+
+        break;
 }
 
 // 2. Unauthenticated Login (POST with login & password in body)
