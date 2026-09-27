@@ -126,10 +126,10 @@ switch($method){
         $search = isset($_GET['q'])  ? trim($_GET['q'])  : (isset($_GET['search']) ? trim($_GET['search']) : null);
         if ($search !== null && $search !== '') {
             $like = '%' . $search . '%';
-            $stmt = $db->prepare('SELECT ID as id, FirstName as name FROM Contacts WHERE UserID = :uid AND FirstName LIKE :q ORDER BY FirstName');
+            $stmt = $db->prepare('SELECT ID AS id, FirstName AS name, LastName AS lastname FROM Contacts WHERE UserID = :uid AND (FirstName LIKE :q OR LastName LIKE :q) ORDER BY FirstName');
             $stmt->execute([':uid' => $userId, ':q' => $like]);
             $rows = $stmt->fetchAll();
-            $results = array_column($rows, 'name');
+            $results = array_column($rows, 'name'+'lastname');
             if (empty($results)) {
                 respond(200, ['results' => [], 'contacts' => [], 'error' => 'No Records Found']);
             }
