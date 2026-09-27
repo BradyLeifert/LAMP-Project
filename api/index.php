@@ -129,11 +129,7 @@ switch($method){
             $stmt = $db->prepare('SELECT ID AS id, FirstName AS name, LastName AS lastname FROM Contacts WHERE UserID = :uid AND (FirstName LIKE :q OR LastName LIKE :q) ORDER BY FirstName');
             $stmt->execute([':uid' => $userId, ':q' => $like]);
             $rows = $stmt->fetchAll();
-            $results = array_column($rows, 'name'+'lastname');
-            if (empty($results)) {
-                respond(200, ['results' => [], 'contacts' => [], 'error' => 'No Records Found']);
-            }
-            respond(200, ['results' => $results, 'contacts' => $rows, 'error' => '']);
+            respond(200, ['contacts' => $rows, 'error' => '']);
         }
 
         break;
