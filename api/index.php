@@ -133,6 +133,35 @@ switch($method){
         }
 
         break;
+    
+    case 'POST': //create contact
+        /*
+        Create contact JSON:
+        {
+            "UserID" = int, //this is the UserID of the person making the request
+            "FirstName" = "", //this is the requested firstname of the newly created contact, NOT the person making the request
+            "LastName" = "",
+            "Phone" = "",
+            "Email" = ""
+        }
+        */
+
+        $body = getRequestBody();
+
+        $userID = clean($body['userID']);
+        $firstName = clean($body['firstName']);
+        $lastName = clean($body['lastName']);
+        $phone = clean($body['phone']);
+        $email = clean($body['email']);
+
+        if($userId == '' || $firstName == '' || $lastName == ''|| $phone == ''|| $email == ''){
+            respond(400, ['error' => 'Please fill in all fields']);
+        }
+
+        //to do: insert into db and respond 201
+
+        break;
+        
 }
 
 // 2. Unauthenticated Login (POST with login & password in body)
