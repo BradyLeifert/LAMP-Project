@@ -116,7 +116,7 @@ if ($method === 'POST') {
         }
     }
 
-    respond(400, ['error' => 'Invalid request']);
+    //respond(400, ['error' => 'Invalid request']);
 }
 
 $userId = requireAuth();
