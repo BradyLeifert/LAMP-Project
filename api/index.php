@@ -227,6 +227,36 @@ switch($method){
         ]);
 
         break;
+
+    case 'DELETE': // delete contact
+
+        $contactId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+
+        if ($contactId <= 0) {
+            respond(400, ['error' => 'A valid contact ID is required']);
+        }
+
+        $stmt = $db->prepare(
+            'DELETE FROM Contacts
+            WHERE ID = :contactId
+            AND UserID = :userId'
+        );
+
+        $stmt->execute([
+            ':contactId' => $contactId,
+            ':userId' => $userId
+        ]);
+
+        if ($stmt->rowCount() === 0) {
+            respond(404, ['error' => 'Contact not found']);
+        }
+
+        respond(200, [
+            'error' => '',
+            'message' => 'Contact deleted successfully'
+        ]);
+
+        break;
         
 }
 
