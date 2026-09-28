@@ -138,10 +138,10 @@ switch($method){
         /*
         Create contact JSON:
         {
-            "FirstName" = "", //this is the requested firstname of the newly created contact, NOT the person making the request
-            "LastName" = "",
-            "Phone" = "",
-            "Email" = ""
+            "firstname" = "", //this is the requested firstname of the newly created contact, NOT the person making the request
+            "lastname" = "",
+            "phone" = "",
+            "email" = ""
         }
         */
 
@@ -173,6 +173,57 @@ switch($method){
         respond(201, [
             'error' => '',
             'message' => 'Contact created successfully'
+        ]);
+
+        break;
+    
+    case 'PUT': // edit contact
+
+        $body = getRequestBody();
+
+        // Contact ID comes from the URL:
+        // /api/index.php?id=4
+        $contactId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+
+        if ($contactId <= 0) {
+            respond(400, ['error' => 'A valid contact ID is required']);
+        }
+
+        $firstName = clean($body['firstname'] ?? '');
+        $lastName  = clean($body['lastname'] ?? '');
+        $phone     = clean($body['phone'] ?? '');
+        $email     = clean($body['email'] ?? '');
+
+        if ($firstName === '' || $lastName === '' || $phone === '' || $email === '') {
+            respond(400, ['error' => 'Please fill in all fields']);
+        }
+
+        $stmt = $db->prepare(
+            'UPDATE Contacts
+            SET FirstName = :firstName,
+                LastName = :lastName,
+                Phone = :phone,
+                Email = :email
+            WHERE ID = :contactId
+            AND UserID = :userId'
+        );
+
+        $stmt->execute([
+            ':firstName' => $firstName,
+            ':lastName' => $lastName,
+            ':phone' => $phone,
+            ':email' => $email,
+            ':contactId' => $contactId,
+            ':userId' => $userId
+        ]);
+
+        if ($stmt->rowCount() === 0) {
+            respond(404, ['error' => 'Contact not found']);
+        }
+
+        respond(200, [
+            'error' => '',
+            'message' => 'Contact updated successfully'
         ]);
 
         break;
