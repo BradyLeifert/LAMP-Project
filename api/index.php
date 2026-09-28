@@ -138,7 +138,6 @@ switch($method){
         /*
         Create contact JSON:
         {
-            "UserID" = int, //this is the UserID of the person making the request
             "FirstName" = "", //this is the requested firstname of the newly created contact, NOT the person making the request
             "LastName" = "",
             "Phone" = "",
@@ -148,9 +147,8 @@ switch($method){
 
         $body = getRequestBody();
 
-        $userID = clean($body['userID']);
-        $firstName = clean($body['firstName']);
-        $lastName = clean($body['lastName']);
+        $firstName = clean($body['firstname']);
+        $lastName = clean($body['lastname']);
         $phone = clean($body['phone']);
         $email = clean($body['email']);
 
@@ -158,7 +156,24 @@ switch($method){
             respond(400, ['error' => 'Please fill in all fields']);
         }
 
-        //to do: insert into db and respond 201
+        // Insert contact into database
+        $stmt = $db->prepare(
+            'INSERT INTO Contacts (UserID, FirstName, LastName, Phone, Email)
+            VALUES (:uid, :firstName, :lastName, :phone, :email)'
+        );
+
+        $stmt->execute([
+            ':uid' => $userId,
+            ':firstName' => $firstName,
+            ':lastName' => $lastName,
+            ':phone' => $phone,
+            ':email' => $email
+        ]);
+
+        respond(201, [
+            'error' => '',
+            'message' => 'Contact created successfully'
+        ]);
 
         break;
         
