@@ -1,15 +1,21 @@
 <?php
 // ============================================================
-//  api/index.php — Unified Colors Manager RESTful API
+//  api/index.php — Contacts Manager RESTful API
 //
-//  GET    /api/index.php?ping=1   — status ping health check
-//  POST   /api/index.php (login)  — authenticate user
-//  GET    /api/index.php          — list all colors for user
-//  GET    /api/index.php?q=term   — partial search colors
-//  GET    /api/index.php?id=1     — get single color by ID
-//  POST   /api/index.php (color)  — create new color
-//  PUT    /api/index.php?id=1     — update color by ID
-//  DELETE /api/index.php?id=1     — delete color by ID
+//  GET    /api/index.php?ping=1     — status ping health check
+//  POST   /api/index.php   — register a new user
+//  POST   /api/index.php (login)    — authenticate user
+//  GET    /api/index.php            — list contacts
+//  GET    /api/index.php?q=term     — partial search contacts
+//  POST   /api/index.php            — create new contact
+//  PUT    /api/index.php?id=1       — update contact by ID
+//  DELETE /api/index.php?id=1       — delete contact by ID
+//
+//  Admins only (everything below needs Role = 'Admin'):
+//  GET    /api/index.php?users      — list all users
+//  GET    /api/index.php?users&q=   — partial search users
+//  POST   /api/index.php?users      — create a User or Admin account
+//  PUT    /api/index.php?users&id=1 — change password / role / disabled
 // ============================================================
 
 require_once __DIR__ . '/config/db.php';
@@ -32,7 +38,7 @@ if ($method === 'POST') {
 
     //Sign up section
     //Contains firstName, lastName, username, password in JSON format
-    if (isset($body['firstName'])) {
+    if (isset($body['firstName']) && !isset($_GET['users'])) {
 
         $firstName = clean($body['firstName']);
         $lastName = clean($body['lastName']);
@@ -68,6 +74,8 @@ if ($method === 'POST') {
             'firstName' => $firstName,
             'lastName' => $lastName,
             'token' => (string) $newId,
+            'role' => 'User',
+            'isAdmin' => false,
             'error' => ''
         ]);
     }
@@ -82,7 +90,7 @@ if ($method === 'POST') {
             respond(400, ['error' => 'Please enter your username and password']);
         }
 
-        $stmt = $db->prepare('SELECT ID, FirstName, LastName, Password FROM Users WHERE Username = :login LIMIT 1');
+        $stmt = $db->prepare('SELECT ID, FirstName, LastName, Password, Role, IsDisabled FROM Users WHERE Username = :login LIMIT 1');
         $stmt->execute([':login' => $login]);
         $user = $stmt->fetch();
 
@@ -97,12 +105,24 @@ if ($method === 'POST') {
             }
         }
 
+        //checked after the password so we don't tell people whether the account exists
+        if ($user && $passwordIsCorrect && $user['IsDisabled'] == 1) {
+            respond(403, [
+                'id' => 0,
+                'firstName' => '',
+                'lastName' => '',
+                'error' => 'This account has been disabled'
+            ]);
+        }
+
         if ($user && $passwordIsCorrect) {
             respond(200, [
                 'id' => (int) $user['ID'],
                 'firstName' => $user['FirstName'],
                 'lastName' => $user['LastName'],
                 'token' => (string) $user['ID'],
+                'role' => $user['Role'],
+                'isAdmin' => $user['Role'] == 'Admin',
                 'error' => '',
 		'message' => 'hello'
             ]);
@@ -119,21 +139,211 @@ if ($method === 'POST') {
     //respond(400, ['error' => 'Invalid request']);
 }
 
-$userId = requireAuth();
+// everything past this point needs to be signed in.
+$me = currentUser($db);
+$userId = (int) $me['ID'];
+$isAdmin = $me['Role'] == 'Admin';
+
+if (isset($_GET['users'])) {
+
+    if (!$isAdmin) {
+        respond(403, ['error' => 'Admin access required']);
+    }
+
+    // The user being managed comes from the URL:
+    // /api/index.php?users&id=4
+    $targetId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+
+    switch ($method) {
+
+        case 'GET': //list or search users
+
+            $search = isset($_GET['q']) ? trim($_GET['q']) : (isset($_GET['search']) ? trim($_GET['search']) : '');
+
+            // Counting the contacts here so the admin page can show how many
+            // entries each user has without asking for them one at a time
+            $sql = 'SELECT u.ID AS id,
+                           u.FirstName AS firstname,
+                           u.LastName AS lastname,
+                           u.Username AS username,
+                           u.Role AS role,
+                           u.IsDisabled AS isDisabled,
+                           COUNT(c.ID) AS contactCount
+                    FROM Users u
+                    LEFT JOIN Contacts c ON c.UserID = u.ID';
+
+            $params = [];
+
+            if ($search !== '') {
+                $sql = $sql . ' WHERE u.FirstName LIKE :q1 OR u.LastName LIKE :q2 OR u.Username LIKE :q3';
+                $like = '%' . $search . '%';
+                $params[':q1'] = $like;
+                $params[':q2'] = $like;
+                $params[':q3'] = $like;
+            }
+
+            $sql = $sql . ' GROUP BY u.ID ORDER BY u.Username';
+
+            $stmt = $db->prepare($sql);
+            $stmt->execute($params);
+            $users = $stmt->fetchAll();
+
+            // MySQL hands these back as strings, so fix them up for the front end
+            for ($i = 0; $i < count($users); $i++) {
+                $users[$i]['id'] = (int) $users[$i]['id'];
+                $users[$i]['isDisabled'] = ((int) $users[$i]['isDisabled'] == 1);
+                $users[$i]['contactCount'] = (int) $users[$i]['contactCount'];
+            }
+
+            respond(200, ['users' => $users, 'error' => '']);
+
+            break;
+
+        case 'POST': //create a user
+
+            $body = getRequestBody();
+
+            $firstName = clean($body['firstname'] ?? '');
+            $lastName = clean($body['lastname'] ?? '');
+            $username = clean($body['username'] ?? '');
+            $password = clean($body['password'] ?? '');
+
+            $role = 'User';
+            if (isset($body['role']) && $body['role'] == 'Admin') {
+                $role = 'Admin';
+            }
+
+            if ($firstName == '' || $lastName == '' || $username == '' || $password == '') {
+                respond(400, ['error' => 'Please fill in all fields']);
+            }
+
+            $checkStmt = $db->prepare('SELECT ID FROM Users WHERE Username = :u LIMIT 1');
+            $checkStmt->execute([':u' => $username]);
+            $existingUser = $checkStmt->fetch();
+
+            if ($existingUser) {
+                respond(409, ['error' => 'That username is already taken']);
+            }
+
+            $insertStmt = $db->prepare('INSERT INTO Users (FirstName, LastName, Username, Password, Role) VALUES (:fn, :ln, :u, :p, :r)');
+            $insertStmt->execute([
+                ':fn' => $firstName,
+                ':ln' => $lastName,
+                ':u' => $username,
+                ':p' => md5($password),
+                ':r' => $role
+            ]);
+
+            respond(201, [
+                'id' => (int) $db->lastInsertId(),
+                'username' => $username,
+                'role' => $role,
+                'error' => '',
+                'message' => 'User created successfully'
+            ]);
+
+            break;
+
+        case 'PUT': //change a user's password, role, or disabled flag
+
+            if ($targetId <= 0) {
+                respond(400, ['error' => 'A valid user ID is required']);
+            }
+
+            $body = getRequestBody();
+
+            $updates = [];
+            $params = [':id' => $targetId];
+
+            if (isset($body['password']) && clean($body['password']) != '') {
+                $updates[] = 'Password = :password';
+                $params[':password'] = md5(clean($body['password']));
+            }
+
+            if (isset($body['role'])) {
+                $updates[] = 'Role = :role';
+                $params[':role'] = $body['role'] == 'Admin' ? 'Admin' : 'User';
+            }
+
+            if (isset($body['isDisabled'])) {
+                $updates[] = 'IsDisabled = :isDisabled';
+                $params[':isDisabled'] = $body['isDisabled'] ? 1 : 0;
+            }
+
+            if (count($updates) == 0) {
+                respond(400, ['error' => 'Nothing to update, send a password, role, and/or isDisabled']);
+            }
+
+            $stmt = $db->prepare('UPDATE Users SET ' . implode(', ', $updates) . ' WHERE ID = :id');
+            $stmt->execute($params);
+
+            respond(200, [
+                'error' => '',
+                'message' => 'User updated successfully'
+            ]);
+
+            break;
+
+        default:
+            respond(405, ['error' => 'Users cannot be deleted, disable them instead']);
+    }
+}
+
+$ownerId = $userId;
+if ($isAdmin) {
+    $ownerId = isset($_GET['owner']) ? (int) $_GET['owner'] : 0;
+}
+
+$ownerFilter = '';
+$ownerParams = [];
+if ($ownerId > 0) {
+    $ownerFilter = ' AND UserID = :userId';
+    $ownerParams[':userId'] = $ownerId;
+}
 
 switch($method){
-    case 'GET': //search contacts
-        $search = isset($_GET['q'])  ? trim($_GET['q'])  : (isset($_GET['search']) ? trim($_GET['search']) : null);
-        if ($search !== null && $search !== '') {
-            $like = '%' . $search . '%';
-            $stmt = $db->prepare('SELECT ID AS id, FirstName AS name, LastName AS lastname FROM Contacts WHERE UserID = :uid AND (FirstName LIKE :q OR LastName LIKE :l) ORDER BY FirstName');
-            $stmt->execute([':uid' => $userId, ':q' => $like, ':l' => $like]);
-            $rows = $stmt->fetchAll();
-            respond(200, ['contacts' => $rows, 'error' => '']);
+    case 'GET': //list or search contacts
+
+        $search = isset($_GET['q'])  ? trim($_GET['q'])  : (isset($_GET['search']) ? trim($_GET['search']) : '');
+
+        // Joining Users so the admin list can show who owns each contact
+        $sql = 'SELECT c.ID AS id,
+                       c.UserID AS userId,
+                       u.Username AS owner,
+                       c.FirstName AS firstname,
+                       c.LastName AS lastname,
+                       c.Phone AS phone,
+                       c.Email AS email
+                FROM Contacts c
+                LEFT JOIN Users u ON u.ID = c.UserID
+                WHERE 1 = 1';
+
+        $params = [];
+
+        if ($ownerId > 0) {
+            $sql = $sql . ' AND c.UserID = :userId';
+            $params[':userId'] = $ownerId;
         }
 
+        if ($search !== '') {
+            $sql = $sql . ' AND (c.FirstName LIKE :q1 OR c.LastName LIKE :q2 OR c.Phone LIKE :q3 OR c.Email LIKE :q4)';
+            $like = '%' . $search . '%';
+            $params[':q1'] = $like;
+            $params[':q2'] = $like;
+            $params[':q3'] = $like;
+            $params[':q4'] = $like;
+        }
+
+        $sql = $sql . ' ORDER BY c.FirstName, c.LastName';
+
+        $stmt = $db->prepare($sql);
+        $stmt->execute($params);
+        $contacts = $stmt->fetchAll();
+
+        respond(200, ['contacts' => $contacts, 'error' => '']);
+
         break;
-    
+
     case 'POST': //create contact
         /*
         Create contact JSON:
@@ -156,6 +366,10 @@ switch($method){
             respond(400, ['error' => 'Please fill in all fields']);
         }
 
+        // An admin with ?owner=4 is adding the contact to that user's list,
+        // otherwise the contact belongs to whoever is making the request
+        $contactOwner = $ownerId > 0 ? $ownerId : $userId;
+
         // Insert contact into database
         $stmt = $db->prepare(
             'INSERT INTO Contacts (UserID, FirstName, LastName, Phone, Email)
@@ -163,7 +377,7 @@ switch($method){
         );
 
         $stmt->execute([
-            ':uid' => $userId,
+            ':uid' => $contactOwner,
             ':firstName' => $firstName,
             ':lastName' => $lastName,
             ':phone' => $phone,
@@ -204,18 +418,17 @@ switch($method){
                 LastName = :lastName,
                 Phone = :phone,
                 Email = :email
-            WHERE ID = :contactId
-            AND UserID = :userId'
+            WHERE ID = :contactId' . $ownerFilter
         );
 
-        $stmt->execute([
-            ':firstName' => $firstName,
-            ':lastName' => $lastName,
-            ':phone' => $phone,
-            ':email' => $email,
-            ':contactId' => $contactId,
-            ':userId' => $userId
-        ]);
+        $params = $ownerParams;
+        $params[':firstName'] = $firstName;
+        $params[':lastName'] = $lastName;
+        $params[':phone'] = $phone;
+        $params[':email'] = $email;
+        $params[':contactId'] = $contactId;
+
+        $stmt->execute($params);
 
         if ($stmt->rowCount() === 0) {
             respond(404, ['error' => 'Contact not found']);
@@ -238,14 +451,13 @@ switch($method){
 
         $stmt = $db->prepare(
             'DELETE FROM Contacts
-            WHERE ID = :contactId
-            AND UserID = :userId'
+            WHERE ID = :contactId' . $ownerFilter
         );
 
-        $stmt->execute([
-            ':contactId' => $contactId,
-            ':userId' => $userId
-        ]);
+        $params = $ownerParams;
+        $params[':contactId'] = $contactId;
+
+        $stmt->execute($params);
 
         if ($stmt->rowCount() === 0) {
             respond(404, ['error' => 'Contact not found']);

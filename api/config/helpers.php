@@ -200,3 +200,22 @@ function requireAuth() {
 
     return (int)$userId;
 }
+
+function currentUser($db) {
+    $userId = requireAuth();
+
+    $stmt = $db->prepare('SELECT ID, FirstName, LastName, Username, Role, IsDisabled FROM Users WHERE ID = :id LIMIT 1');
+    $stmt->execute([':id' => $userId]);
+    $user = $stmt->fetch();
+
+    // The token is a plain user ID, so it can point at a row that no longer exists
+    if (!$user) {
+        respond(401, ['error' => 'Unauthorized']);
+    }
+
+    if ($user['IsDisabled'] == 1) {
+        respond(403, ['error' => 'This account has been disabled']);
+    }
+
+    return $user;
+}
