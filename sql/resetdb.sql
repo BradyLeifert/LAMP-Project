@@ -52,7 +52,8 @@ INSERT INTO `Users` VALUES (1,'Rick','Leinecker','RickL','COP4331','2026-09-10 0
 (5,'Sam','Hill','SamH_MD5','0cbc6611f5540bd0809a388dc95a615b','2026-09-10 01:55:33','2026-09-10 01:55:33','User',0),
 (6,'Alex','Smith','AlexS_MD5','e628e41ca122e4f795675f1cefa91ddd','2026-09-10 01:55:33','2026-09-10 01:55:33','User',0),
 (7,'John','Doe','johndoe','34819d7beeabb9260a5c854bc85b3e44','2026-09-18 14:53:12','2026-09-18 14:53:12','User',0),
-(8,'Johntwo','Doe','johndoetwo','34819d7beeabb9260a5c854bc85b3e44','2026-09-18 17:30:33','2026-09-18 17:30:33','User',0);
+(8,'Johntwo','Doe','johndoetwo','34819d7beeabb9260a5c854bc85b3e44','2026-09-18 17:30:33','2026-09-18 17:30:33','User',0),
+(9,'root','Administrator','johndoetwo','admin','2026-09-24 17:30:33','2026-09-24 17:30:33','Admin',0);
 
 INSERT INTO `Contacts` VALUES (1,1,'John','Smith','555-1234','john.doe@gmail.com','2026-09-10 03:05:46','2026-09-10 03:05:46'),
 (2,1,'Bob','Baker','555-5678','bob.baker@yahoo.com','2026-09-10 03:05:46','2026-09-10 03:05:46'),
