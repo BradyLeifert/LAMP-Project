@@ -1,81 +1,3235 @@
-<!DOCTYPE html>
-<html lang="en" data-bs-theme="dark">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>COP 4331 LAMP Stack Demo</title>
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Bootstrap 5.3 & Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="images/favicon.svg">
-    <link rel="alternate icon" href="favicon.ico">
-    <!-- Custom Styles -->
-    <link href="css/styles.css" rel="stylesheet">
-    <!-- Scripts -->
-    <script type="text/javascript" src="js/md5.js"></script>
-    <script type="text/javascript" src="js/code.js"></script>
-</head>
-<body class="d-flex align-items-center justify-content-center min-vh-100 py-5">
-    <div class="background-glow"></div>
-    <main class="container">
-        <div class="row justify-content-center">
-            <div class="col-12 col-sm-10 col-md-8 col-lg-5">
-                
-                <!-- Title Header -->
-                <div class="text-center mb-4">
-                    <div class="app-icon-wrapper mb-3 mx-auto">
-                        <i class="bi bi-palette-fill"></i>
-                    </div>
-                    <h1 id="title" class="fw-bold tracking-tight">COP 4331 LAMP Stack Demo</h1>
-                    <p class="text-secondary-contrast small">Color Manager Portal</p>
+<title>Personal Contact Manager</title>
+
+<!-- Bootstrap 5 -->
+<link
+    href="https://unpkg.com/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+>
+
+<!-- Bootstrap Icons -->
+<link
+    href="https://unpkg.com/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
+    rel="stylesheet"
+>
+
+<style>
+    :root {
+        --app-bg: #0b1120;
+        --app-card: #111827;
+        --app-card-2: #172033;
+        --app-border: rgba(255,255,255,.09);
+        --app-muted: #94a3b8;
+        --app-primary: #6366f1;
+        --app-primary-hover: #818cf8;
+    }
+
+    body {
+        min-height: 100vh;
+        background:
+            radial-gradient(circle at 10% 10%, rgba(99,102,241,.12), transparent 30%),
+            radial-gradient(circle at 90% 20%, rgba(14,165,233,.08), transparent 28%),
+            var(--app-bg);
+        color: #f8fafc;
+    }
+
+    .navbar {
+        background: rgba(11, 17, 32, .88) !important;
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--app-border);
+    }
+
+    .brand-icon {
+        width: 40px;
+        height: 40px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        color: white;
+        font-size: 1.25rem;
+    }
+
+    .auth-shell {
+        min-height: calc(100vh - 1px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+    }
+
+    .auth-card {
+        width: 100%;
+        max-width: 470px;
+        background: rgba(17, 24, 39, .94);
+        border: 1px solid var(--app-border);
+        border-radius: 20px;
+        box-shadow: 0 25px 80px rgba(0,0,0,.35);
+        overflow: hidden;
+    }
+
+    .auth-header {
+        padding: 2rem 2rem 1rem;
+        text-align: center;
+    }
+
+    .auth-body {
+        padding: 1.5rem 2rem 2rem;
+    }
+
+    .form-control,
+    .form-select {
+        background-color: #0f172a;
+        border-color: var(--app-border);
+        color: #f8fafc;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        background-color: #0f172a;
+        color: #fff;
+        border-color: var(--app-primary);
+        box-shadow: 0 0 0 .25rem rgba(99,102,241,.15);
+    }
+
+    .form-control::placeholder {
+        color: #64748b;
+    }
+
+    .btn-primary {
+        --bs-btn-bg: var(--app-primary);
+        --bs-btn-border-color: var(--app-primary);
+        --bs-btn-hover-bg: var(--app-primary-hover);
+        --bs-btn-hover-border-color: var(--app-primary-hover);
+    }
+
+    .dashboard-shell {
+        padding-top: 80px;
+        padding-bottom: 3rem;
+    }
+
+    .app-card {
+        background: rgba(17, 24, 39, .88);
+        border: 1px solid var(--app-border);
+        border-radius: 16px;
+        box-shadow: 0 15px 45px rgba(0,0,0,.18);
+    }
+
+    .stat-card {
+        min-height: 120px;
+    }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 14px;
+        font-size: 1.3rem;
+    }
+
+    .table {
+        --bs-table-bg: transparent;
+        --bs-table-color: #e2e8f0;
+        --bs-table-border-color: var(--app-border);
+    }
+
+    .table > :not(caption) > * > * {
+        padding: .9rem .75rem;
+    }
+
+    .table thead th {
+        color: #94a3b8;
+        font-size: .78rem;
+        text-transform: uppercase;
+        letter-spacing: .06em;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .table tbody tr:hover {
+        background: rgba(255,255,255,.025);
+    }
+
+    .avatar {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        color: #fff;
+        font-weight: 700;
+        font-size: .85rem;
+        flex-shrink: 0;
+    }
+
+    .contact-name {
+        font-weight: 600;
+    }
+
+    .muted {
+        color: var(--app-muted);
+    }
+
+    .empty-state {
+        padding: 4rem 1rem;
+        text-align: center;
+        color: var(--app-muted);
+    }
+
+    .empty-state i {
+        font-size: 3rem;
+        opacity: .45;
+    }
+
+    .modal-content {
+        background: #111827;
+        border: 1px solid var(--app-border);
+    }
+
+    .modal-header,
+    .modal-footer {
+        border-color: var(--app-border);
+    }
+
+    .btn-close {
+        filter: invert(1) grayscale(100%) brightness(200%);
+    }
+
+    .toast-container {
+        z-index: 1100;
+    }
+
+    .loading-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 2000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        background: rgba(2, 6, 23, .65);
+        backdrop-filter: blur(4px);
+    }
+
+    .loading-overlay.show {
+        display: flex;
+    }
+
+    .search-box {
+        max-width: 340px;
+    }
+
+    .admin-only {
+        display: none !important;
+    }
+
+    body.is-admin .admin-only {
+        display: block !important;
+    }
+
+    body.is-admin .admin-only.d-flex {
+        display: flex !important;
+    }
+
+    .badge-soft-primary {
+        background: rgba(99,102,241,.15);
+        color: #a5b4fc;
+    }
+
+    .badge-soft-success {
+        background: rgba(34,197,94,.15);
+        color: #86efac;
+    }
+
+    .badge-soft-warning {
+        background: rgba(245,158,11,.15);
+        color: #fcd34d;
+    }
+
+    .badge-soft-danger {
+        background: rgba(239,68,68,.15);
+        color: #fca5a5;
+    }
+
+    .section-title {
+        font-size: 1.15rem;
+        font-weight: 650;
+    }
+
+    .mobile-contact {
+        display: none;
+    }
+
+    @media (max-width: 767.98px) {
+        .auth-header,
+        .auth-body {
+            padding-left: 1.25rem;
+            padding-right: 1.25rem;
+        }
+
+        .dashboard-shell {
+            padding-top: 72px;
+        }
+
+        .table-responsive {
+            border-radius: 12px;
+        }
+
+        .desktop-contact {
+            display: none;
+        }
+
+        .mobile-contact {
+            display: block;
+        }
+    }
+</style>
+
+</head> <body> <!-- ========================================================= AUTHENTICATION ========================================================= --> <div id="authView" class="auth-shell">
+<div class="auth-card">
+
+    <div class="auth-header">
+        <div class="brand-icon mx-auto mb-3">
+            <i class="bi bi-person-lines-fill"></i>
+        </div>
+
+        <h1 class="h3 fw-bold mb-2">Personal Contact Manager</h1>
+        <p class="muted mb-0">
+            Securely manage your contacts in one place.
+        </p>
+    </div>
+
+    <div class="auth-body">
+
+        <!-- Login -->
+        <div id="loginPanel">
+
+            <h2 class="h5 mb-4">Sign in</h2>
+
+            <form
+                id="loginForm"
+                onsubmit="event.preventDefault(); loginUser();"
+            >
+
+                <div class="mb-3">
+                    <label for="loginUsername" class="form-label">
+                        Username
+                    </label>
+
+                    <input
+                        type="text"
+                        class="form-control form-control-lg"
+                        id="loginUsername"
+                        autocomplete="username"
+                        required
+                    >
                 </div>
 
-                <!-- Login Card -->
-                <div id="loginDiv" class="card glass-card shadow-lg border-0 p-4 p-sm-5">
-                    <div class="card-body p-0">
-                        <span id="inner-title" class="d-block text-center fw-semibold text-uppercase tracking-wider mb-4 fs-5">Please Log In</span>
-                        
-                        <form id="loginForm" onsubmit="event.preventDefault(); doLogin();" class="needs-validation">
-                            <!-- Username Input Group -->
-                            <div class="mb-3">
-                                <label for="loginName" class="form-label form-label-contrast small">Username</label>
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="bi bi-person text-secondary-contrast"></i></span>
-                                    <input type="text" id="loginName" class="form-control" placeholder="Enter username" required />
-                                </div>
-                            </div>
-                            
-                            <!-- Password Input Group -->
-                            <div class="mb-4">
-                                <label for="loginPassword" class="form-label form-label-contrast small">Password</label>
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="bi bi-lock text-secondary-contrast"></i></span>
-                                    <input type="password" id="loginPassword" class="form-control" placeholder="Enter password" required />
-                                </div>
-                            </div>
+                <div class="mb-4">
+                    <label for="loginPassword" class="form-label">
+                        Password
+                    </label>
 
-                            <!-- Login Button -->
-                            <button type="submit" id="loginButton" class="buttons btn btn-primary w-100 py-3 fw-semibold rounded-3 shadow-sm d-flex align-items-center justify-content-center gap-2">
-                                <span>Sign In</span>
-                                <i class="bi bi-arrow-right"></i>
-                            </button>
-                        </form>
+                    <input
+                        type="password"
+                        class="form-control form-control-lg"
+                        id="loginPassword"
+                        autocomplete="current-password"
+                        required
+                    >
+                </div>
 
-                        <!-- Feedback Result Message -->
-                        <div class="mt-3 text-center">
-                            <span id="loginResult" class="small fw-semibold"></span>
+                <button
+                    type="submit"
+                    id="loginButton"
+                    class="btn btn-primary btn-lg w-100"
+                >
+                    <i class="bi bi-box-arrow-in-right me-2"></i>
+                    Sign In
+                </button>
+
+            </form>
+
+            <div class="text-center mt-4">
+                <span class="muted">Don't have an account?</span>
+                <button
+                    type="button"
+                    class="btn btn-link p-0 ms-1"
+                    onclick="showRegister()"
+                >
+                    Create one
+                </button>
+            </div>
+        </div>
+
+        <!-- Register -->
+        <div id="registerPanel" class="d-none">
+
+            <h2 class="h5 mb-4">Create your account</h2>
+
+            <form
+                id="registerForm"
+                onsubmit="event.preventDefault(); registerUser();"
+            >
+
+                <div class="row g-3">
+
+                    <div class="col-sm-6">
+                        <label for="registerFirstName" class="form-label">
+                            First name
+                        </label>
+
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="registerFirstName"
+                            autocomplete="given-name"
+                            required
+                        >
+                    </div>
+
+                    <div class="col-sm-6">
+                        <label for="registerLastName" class="form-label">
+                            Last name
+                        </label>
+
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="registerLastName"
+                            autocomplete="family-name"
+                            required
+                        >
+                    </div>
+
+                    <div class="col-12">
+                        <label for="registerUsername" class="form-label">
+                            Username
+                        </label>
+
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="registerUsername"
+                            autocomplete="username"
+                            required
+                        >
+                    </div>
+
+                    <div class="col-12">
+                        <label for="registerPassword" class="form-label">
+                            Password
+                        </label>
+
+                        <input
+                            type="password"
+                            class="form-control"
+                            id="registerPassword"
+                            autocomplete="new-password"
+                            required
+                        >
+                    </div>
+
+                </div>
+
+                <button
+                    type="submit"
+                    id="registerButton"
+                    class="btn btn-primary btn-lg w-100 mt-4"
+                >
+                    <i class="bi bi-person-plus-fill me-2"></i>
+                    Create Account
+                </button>
+
+            </form>
+
+            <div class="text-center mt-4">
+                <span class="muted">Already have an account?</span>
+                <button
+                    type="button"
+                    class="btn btn-link p-0 ms-1"
+                    onclick="showLogin()"
+                >
+                    Sign in
+                </button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+</div> <!-- ========================================================= DASHBOARD ========================================================= --> <div id="dashboardView" class="d-none">
+<nav class="navbar navbar-expand-lg fixed-top">
+    <div class="container-fluid px-3 px-lg-4">
+
+        <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+            <span class="brand-icon">
+                <i class="bi bi-person-lines-fill"></i>
+            </span>
+
+            <span>
+                <span class="fw-bold">Contact Manager</span>
+                <small class="d-none d-md-block muted">
+                    Personal Contact Manager
+                </small>
+            </span>
+        </a>
+
+        <div class="d-flex align-items-center gap-2">
+
+            <div class="text-end d-none d-sm-block">
+                <div id="navUserName" class="fw-semibold"></div>
+                <div id="navUserRole" class="small muted"></div>
+            </div>
+
+            <button
+                type="button"
+                class="btn btn-outline-secondary"
+                onclick="logoutUser()"
+                title="Sign out"
+            >
+                <i class="bi bi-box-arrow-right"></i>
+                <span class="d-none d-sm-inline ms-1">Sign Out</span>
+            </button>
+
+        </div>
+    </div>
+</nav>
+
+<main class="container-fluid dashboard-shell px-3 px-lg-4">
+
+    <!-- Dashboard heading -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+
+        <div>
+            <h1 class="h3 fw-bold mb-1">
+                Welcome, <span id="dashboardFirstName"></span>
+            </h1>
+
+            <p class="muted mb-0">
+                Manage your personal contacts.
+            </p>
+        </div>
+
+        <button
+            type="button"
+            class="btn btn-primary"
+            onclick="openContactModal()"
+        >
+            <i class="bi bi-person-plus-fill me-2"></i>
+            Add Contact
+        </button>
+
+    </div>
+
+    <!-- Statistics -->
+    <div class="row g-3 mb-4">
+
+        <div class="col-12 col-sm-6 col-xl-4">
+            <div class="app-card stat-card p-3 p-lg-4">
+                <div class="d-flex align-items-center gap-3">
+
+                    <div class="stat-icon bg-primary bg-opacity-10 text-primary">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+
+                    <div>
+                        <div class="small muted">Contacts</div>
+                        <div id="contactCount" class="fs-3 fw-bold">0</div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-4 admin-only">
+            <div class="app-card stat-card p-3 p-lg-4">
+                <div class="d-flex align-items-center gap-3">
+
+                    <div class="stat-icon bg-success bg-opacity-10 text-success">
+                        <i class="bi bi-person-badge-fill"></i>
+                    </div>
+
+                    <div>
+                        <div class="small muted">Users</div>
+                        <div id="userCount" class="fs-3 fw-bold">0</div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-4 admin-only">
+            <div class="app-card stat-card p-3 p-lg-4">
+                <div class="d-flex align-items-center gap-3">
+
+                    <div class="stat-icon bg-warning bg-opacity-10 text-warning">
+                        <i class="bi bi-shield-lock-fill"></i>
+                    </div>
+
+                    <div>
+                        <div class="small muted">Account type</div>
+                        <div class="fs-5 fw-bold">Administrator</div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Contacts -->
+    <section class="app-card mb-4">
+
+        <div class="p-3 p-lg-4 border-bottom border-secondary-subtle">
+
+            <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
+
+                <div>
+                    <div class="section-title">
+                        <i class="bi bi-person-vcard me-2 text-primary"></i>
+                        Contacts
+                    </div>
+
+                    <div class="small muted mt-1">
+                        Search, edit, or remove your contacts.
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2">
+
+                    <div class="input-group search-box">
+                        <span class="input-group-text bg-dark border-secondary-subtle">
+                            <i class="bi bi-search"></i>
+                        </span>
+
+                        <input
+                            type="search"
+                            id="contactSearch"
+                            class="form-control"
+                            placeholder="Search contacts..."
+                            oninput="debouncedContactSearch()"
+                        >
+                    </div>
+
+                    <button
+                        type="button"
+                        class="btn btn-outline-secondary"
+                        onclick="loadContacts()"
+                        title="Refresh"
+                    >
+                        <i class="bi bi-arrow-clockwise"></i>
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Admin owner filter -->
+        <div id="ownerFilterRow" class="d-none p-3 border-bottom border-secondary-subtle admin-only">
+
+            <div class="d-flex flex-column flex-md-row align-items-md-center gap-2">
+
+                <label for="contactOwnerSelect" class="small muted text-nowrap">
+                    Viewing contacts for:
+                </label>
+
+                <select
+                    id="contactOwnerSelect"
+                    class="form-select form-select-sm"
+                    style="max-width: 300px;"
+                    onchange="loadContacts()"
+                >
+                    <option value="0">All contacts</option>
+                </select>
+
+            </div>
+
+        </div>
+
+        <div class="table-responsive desktop-contact">
+
+            <table class="table table-hover align-middle mb-0">
+
+                <thead>
+                    <tr>
+                        <th>Contact</th>
+                        <th>Phone</th>
+                        <th>Email</th>
+                        <th class="admin-only">Owner</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody id="contactsTableBody"></tbody>
+
+            </table>
+
+        </div>
+
+        <div id="contactsMobileList" class="mobile-contact p-3"></div>
+
+        <div id="contactsEmpty" class="empty-state d-none">
+            <i class="bi bi-person-x d-block mb-3"></i>
+            <h3 class="h5">No contacts found</h3>
+            <p class="mb-0">
+                Add your first contact to get started.
+            </p>
+        </div>
+
+    </section>
+
+    <!-- Admin Users -->
+    <section id="adminUsersSection" class="app-card admin-only mb-4">
+
+        <div class="p-3 p-lg-4 border-bottom border-secondary-subtle">
+
+            <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
+
+                <div>
+                    <div class="section-title">
+                        <i class="bi bi-shield-lock me-2 text-warning"></i>
+                        User Administration
+                    </div>
+
+                    <div class="small muted mt-1">
+                        Create and manage application accounts.
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2">
+
+                    <div class="input-group search-box">
+                        <span class="input-group-text bg-dark border-secondary-subtle">
+                            <i class="bi bi-search"></i>
+                        </span>
+
+                        <input
+                            type="search"
+                            id="userSearch"
+                            class="form-control"
+                            placeholder="Search users..."
+                            oninput="debouncedUserSearch()"
+                        >
+                    </div>
+
+                    <button
+                        type="button"
+                        class="btn btn-primary"
+                        onclick="openUserModal()"
+                    >
+                        <i class="bi bi-person-plus-fill"></i>
+                        <span class="d-none d-sm-inline ms-1">New User</span>
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="table-responsive">
+
+            <table class="table table-hover align-middle mb-0">
+
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Username</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Contacts</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody id="usersTableBody"></tbody>
+
+            </table>
+
+        </div>
+
+        <div id="usersEmpty" class="empty-state d-none">
+            <i class="bi bi-people d-block mb-3"></i>
+            <h3 class="h5">No users found</h3>
+        </div>
+
+    </section>
+
+</main>
+
+</div> <!-- ========================================================= CONTACT MODAL ========================================================= --> <div class="modal fade" id="contactModal" tabindex="-1" aria-hidden="true" > <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+        <div class="modal-header">
+            <div>
+                <h5 class="modal-title" id="contactModalTitle">
+                    Add Contact
+                </h5>
+
+                <div class="small muted">
+                    Enter the contact's information.
+                </div>
+            </div>
+
+            <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+            ></button>
+        </div>
+
+        <form
+            id="contactForm"
+            onsubmit="event.preventDefault(); saveContact();"
+        >
+
+            <div class="modal-body">
+
+                <input type="hidden" id="contactId">
+
+                <div class="row g-3">
+
+                    <div class="col-sm-6">
+                        <label for="contactFirstName" class="form-label">
+                            First name
+                        </label>
+
+                        <input
+                            type="text"
+                            id="contactFirstName"
+                            class="form-control"
+                            required
+                        >
+                    </div>
+
+                    <div class="col-sm-6">
+                        <label for="contactLastName" class="form-label">
+                            Last name
+                        </label>
+
+                        <input
+                            type="text"
+                            id="contactLastName"
+                            class="form-control"
+                            required
+                        >
+                    </div>
+
+                    <div class="col-12">
+                        <label for="contactPhone" class="form-label">
+                            Phone
+                        </label>
+
+                        <input
+                            type="tel"
+                            id="contactPhone"
+                            class="form-control"
+                            required
+                        >
+                    </div>
+
+                    <div class="col-12">
+                        <label for="contactEmail" class="form-label">
+                            Email
+                        </label>
+
+                        <input
+                            type="email"
+                            id="contactEmail"
+                            class="form-control"
+                            required
+                        >
+                    </div>
+
+                    <div
+                        id="contactOwnerField"
+                        class="col-12 d-none"
+                    >
+                        <label for="contactOwner" class="form-label">
+                            Contact owner
+                        </label>
+
+                        <select
+                            id="contactOwner"
+                            class="form-select"
+                        ></select>
+
+                        <div class="form-text">
+                            Admins can add contacts to another user's list.
                         </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    type="submit"
+                    id="saveContactButton"
+                    class="btn btn-primary"
+                >
+                    <i class="bi bi-check-lg me-1"></i>
+                    Save Contact
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+</div> <!-- ========================================================= USER MODAL ========================================================= --> <div class="modal fade" id="userModal" tabindex="-1" aria-hidden="true" > <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+        <div class="modal-header">
+
+            <div>
+                <h5 class="modal-title" id="userModalTitle">
+                    Create User
+                </h5>
+
+                <div class="small muted">
+                    Manage an application account.
+                </div>
+            </div>
+
+            <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+            ></button>
+
+        </div>
+
+        <form
+            id="userForm"
+            onsubmit="event.preventDefault(); saveUser();"
+        >
+
+            <div class="modal-body">
+
+                <input type="hidden" id="managedUserId">
+
+                <div id="newUserFields" class="row g-3">
+
+                    <div class="col-sm-6">
+                        <label for="managedFirstName" class="form-label">
+                            First name
+                        </label>
+
+                        <input
+                            type="text"
+                            id="managedFirstName"
+                            class="form-control"
+                        >
+                    </div>
+
+                    <div class="col-sm-6">
+                        <label for="managedLastName" class="form-label">
+                            Last name
+                        </label>
+
+                        <input
+                            type="text"
+                            id="managedLastName"
+                            class="form-control"
+                        >
+                    </div>
+
+                    <div class="col-12">
+                        <label for="managedUsername" class="form-label">
+                            Username
+                        </label>
+
+                        <input
+                            type="text"
+                            id="managedUsername"
+                            class="form-control"
+                        >
+                    </div>
+
+                </div>
+
+                <div class="mt-3">
+
+                    <label for="managedPassword" class="form-label">
+                        <span id="managedPasswordLabel">
+                            Password
+                        </span>
+                    </label>
+
+                    <input
+                        type="password"
+                        id="managedPassword"
+                        class="form-control"
+                        autocomplete="new-password"
+                    >
+
+                    <div
+                        id="managedPasswordHelp"
+                        class="form-text"
+                    >
+                        Required when creating a new account.
+                    </div>
+
+                </div>
+
+                <div class="mt-3">
+
+                    <label for="managedRole" class="form-label">
+                        Role
+                    </label>
+
+                    <select
+                        id="managedRole"
+                        class="form-select"
+                    >
+                        <option value="User">User</option>
+                        <option value="Admin">Admin</option>
+                    </select>
+
+                </div>
+
+                <div
+                    id="managedDisabledGroup"
+                    class="form-check form-switch mt-4 d-none"
+                >
+
+                    <input
+                        class="form-check-input"
+                        type="checkbox"
+                        role="switch"
+                        id="managedDisabled"
+                    >
+
+                    <label
+                        class="form-check-label"
+                        for="managedDisabled"
+                    >
+                        Disable this account
+                    </label>
+
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    type="submit"
+                    class="btn btn-primary"
+                    id="saveUserButton"
+                >
+                    <i class="bi bi-check-lg me-1"></i>
+                    Save User
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+</div> <!-- ========================================================= DELETE CONFIRMATION MODAL ========================================================= --> <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true" > <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content">
+
+        <div class="modal-header">
+            <h5 class="modal-title">Delete Contact</h5>
+
+            <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+            ></button>
+        </div>
+
+        <div class="modal-body">
+
+            <div class="text-center">
+
+                <div class="stat-icon bg-danger bg-opacity-10 text-danger mx-auto mb-3">
+                    <i class="bi bi-trash3-fill"></i>
+                </div>
+
+                <p class="mb-1 fw-semibold">
+                    Delete this contact?
+                </p>
+
+                <p class="small muted mb-0">
+                    This action cannot be undone.
+                </p>
+
+            </div>
+
+            <input type="hidden" id="deleteContactId">
+
+        </div>
+
+        <div class="modal-footer">
+
+            <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+            >
+                Cancel
+            </button>
+
+            <button
+                type="button"
+                class="btn btn-danger"
+                onclick="confirmDeleteContact()"
+            >
+                Delete
+            </button>
+
+        </div>
+
+    </div>
+</div>
+
+</div> <!-- ========================================================= TOASTS ========================================================= --> <div class="toast-container position-fixed bottom-0 end-0 p-3">
+<div
+    id="appToast"
+    class="toast"
+    role="alert"
+    aria-live="assertive"
+    aria-atomic="true"
+>
+
+    <div class="toast-header">
+
+        <i id="toastIcon" class="bi bi-info-circle-fill text-primary me-2"></i>
+
+        <strong id="toastTitle" class="me-auto">
+            Notification
+        </strong>
+
+        <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="toast"
+            aria-label="Close"
+        ></button>
+
+    </div>
+
+    <div id="toastMessage" class="toast-body"></div>
+
+</div>
+
+</div> <!-- ========================================================= LOADING OVERLAY ========================================================= --> <div id="loadingOverlay" class="loading-overlay">
+<div class="text-center">
+
+    <div
+        class="spinner-border text-primary mb-3"
+        style="width: 3rem; height: 3rem;"
+        role="status"
+    >
+        <span class="visually-hidden">Loading...</span>
+    </div>
+
+    <div id="loadingText" class="fw-semibold">
+        Loading...
+    </div>
+
+</div>
+
+</div> <!-- Bootstrap JavaScript --> <script src="https://unpkg.com/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" ></script> <script> "use strict";
+/* =========================================================
+CONFIGURATION
+========================================================= */
+
+const API_URL = "/api/index.php";
+
+let currentUser = null;
+let contacts = [];
+let users = [];
+
+let contactModal;
+let userModal;
+let deleteModal;
+
+let contactSearchTimer = null;
+let userSearchTimer = null;
+
+/* =========================================================
+INITIALIZATION
+========================================================= */
+
+document.addEventListener("DOMContentLoaded", async () => {
+
+contactModal = new bootstrap.Modal(
+    document.getElementById("contactModal")
+);
+
+userModal = new bootstrap.Modal(
+    document.getElementById("userModal")
+);
+
+deleteModal = new bootstrap.Modal(
+    document.getElementById("deleteModal")
+);
+
+await restoreSession();
+
+});
+
+/* =========================================================
+AUTHENTICATION / SESSION
+========================================================= */
+
+/*
+
+The PHP backend accepts:
+
+Authorization: Bearer <numeric user ID>
+
+and also:
+
+Cookie: userId=<numeric user ID>
+
+PHP itself does NOT currently send Set-Cookie headers.
+
+The login response contains:
+
+"token": "<user ID>"
+
+Therefore the browser creates the backend-compatible
+
+userId cookie after successful authentication.
+*/
+
+function setAuthCookie(userId) {
+
+const secure = location.protocol === "https:" ? "; Secure" : "";
+
+document.cookie =
+    "userId=" +
+    encodeURIComponent(String(userId)) +
+    "; Path=/; SameSite=Strict" +
+    secure +
+    "; Max-Age=86400";
+
+}
+
+function getCookie(name) {
+
+const prefix = name + "=";
+
+const cookies = document.cookie.split(";");
+
+for (const cookie of cookies) {
+
+    const value = cookie.trim();
+
+    if (value.startsWith(prefix)) {
+        return decodeURIComponent(
+            value.substring(prefix.length)
+        );
+    }
+}
+
+return null;
+
+}
+
+function clearAuthCookie() {
+
+const secure = location.protocol === "https:" ? "; Secure" : "";
+
+document.cookie =
+    "userId=; Path=/; SameSite=Strict" +
+    secure +
+    "; Max-Age=0";
+
+}
+
+function getStoredUserId() {
+
+const cookieId = getCookie("userId");
+
+if (cookieId && /^\d+$/.test(cookieId) && Number(cookieId) > 0) {
+    return Number(cookieId);
+}
+
+/*
+ * Backend also recognizes user_id.
+ * This is only a fallback for an existing deployment.
+ */
+const alternateCookie = getCookie("user_id");
+
+if (
+    alternateCookie &&
+    /^\d+$/.test(alternateCookie) &&
+    Number(alternateCookie) > 0
+) {
+    return Number(alternateCookie);
+}
+
+return null;
+
+}
+
+function authHeaders(extraHeaders = {}) {
+
+const headers = {
+    "Content-Type": "application/json",
+    ...extraHeaders
+};
+
+const userId = getStoredUserId();
+
+if (userId) {
+    headers["Authorization"] = "Bearer " + userId;
+}
+
+return headers;
+
+}
+
+async function apiFetch(url = API_URL, options = {}) {
+
+const config = {
+    credentials: "same-origin",
+    ...options
+};
+
+config.headers = {
+    ...authHeaders(),
+    ...(options.headers || {})
+};
+
+let response;
+
+try {
+
+    response = await fetch(url, config);
+
+} catch (error) {
+
+    throw new Error(
+        "Unable to connect to the server. Check your HTTPS connection and Apache configuration."
+    );
+}
+
+let data = {};
+
+try {
+    data = await response.json();
+} catch (_) {
+    data = {};
+}
+
+if (response.status === 401) {
+
+    clearAuthCookie();
+
+    if (!currentUser) {
+        throw new Error(data.error || "Unauthorized");
+    }
+
+    logoutUser(false);
+
+    throw new Error("Your session has expired. Please sign in again.");
+}
+
+if (!response.ok) {
+
+    throw new Error(
+        data.error ||
+        data.message ||
+        "The server returned HTTP " + response.status
+    );
+}
+
+return data;
+
+}
+
+/* =========================================================
+LOGIN
+========================================================= */
+
+async function loginUser() {
+
+const login = document.getElementById("loginUsername").value.trim();
+const password = document.getElementById("loginPassword").value;
+
+if (!login || !password) {
+    showToast("Please enter your username and password.", "warning");
+    return;
+}
+
+setButtonLoading(
+    "loginButton",
+    true,
+    "Signing in..."
+);
+
+try {
+
+    /*
+     * IMPORTANT:
+     * Backend specifically expects:
+     *
+     * {
+     *   "login": "...",
+     *   "password": "..."
+     * }
+     */
+
+    const data = await apiFetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify({
+            login: login,
+            password: password
+        })
+    });
+
+    if (!data.id || !data.token) {
+        throw new Error(
+            data.error || "Login response did not contain a valid user ID."
+        );
+    }
+
+    currentUser = {
+        id: Number(data.id),
+        firstName: data.firstName || "",
+        lastName: data.lastName || "",
+        role: data.role || "User",
+        isAdmin: data.isAdmin === true
+    };
+
+    setAuthCookie(data.token);
+
+    document.getElementById("loginForm").reset();
+
+    showDashboard();
+
+    await loadDashboard();
+
+    showToast(
+        "Welcome back, " + currentUser.firstName + "!",
+        "success"
+    );
+
+} catch (error) {
+
+    showToast(error.message, "danger");
+
+} finally {
+
+    setButtonLoading(
+        "loginButton",
+        false,
+        '<i class="bi bi-box-arrow-in-right me-2"></i>Sign In'
+    );
+}
+
+}
+
+/* =========================================================
+REGISTER
+========================================================= */
+
+async function registerUser() {
+
+const firstName =
+    document.getElementById("registerFirstName").value.trim();
+
+const lastName =
+    document.getElementById("registerLastName").value.trim();
+
+const username =
+    document.getElementById("registerUsername").value.trim();
+
+const password =
+    document.getElementById("registerPassword").value;
+
+if (!firstName || !lastName || !username || !password) {
+
+    showToast(
+        "Please fill in all registration fields.",
+        "warning"
+    );
+
+    return;
+}
+
+setButtonLoading(
+    "registerButton",
+    true,
+    "Creating account..."
+);
+
+try {
+
+    /*
+     * IMPORTANT:
+     * Registration uses camelCase names in PHP:
+     *
+     * firstName
+     * lastName
+     * username
+     * password
+     */
+
+    const response = await fetch(API_URL, {
+        method: "POST",
+        credentials: "same-origin",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            firstName: firstName,
+            lastName: lastName,
+            username: username,
+            password: password
+        })
+    });
+
+    let data = {};
+
+    try {
+        data = await response.json();
+    } catch (_) {}
+
+    if (!response.ok) {
+        throw new Error(
+            data.error ||
+            data.message ||
+            "Registration failed."
+        );
+    }
+
+    /*
+     * Backend returns a token containing the new numeric ID,
+     * so immediately establish the same browser authentication
+     * mechanism as login.
+     */
+
+    if (!data.id || !data.token) {
+        throw new Error(
+            "Account was created, but no authentication token was returned."
+        );
+    }
+
+    currentUser = {
+        id: Number(data.id),
+        firstName: data.firstName || firstName,
+        lastName: data.lastName || lastName,
+        role: data.role || "User",
+        isAdmin: data.isAdmin === true
+    };
+
+    setAuthCookie(data.token);
+
+    document.getElementById("registerForm").reset();
+
+    showDashboard();
+
+    await loadDashboard();
+
+    showToast(
+        "Account created successfully. Welcome!",
+        "success"
+    );
+
+} catch (error) {
+
+    showToast(error.message, "danger");
+
+} finally {
+
+    setButtonLoading(
+        "registerButton",
+        false,
+        '<i class="bi bi-person-plus-fill me-2"></i>Create Account'
+    );
+}
+
+}
+
+/* =========================================================
+SESSION RESTORATION
+========================================================= */
+
+async function restoreSession() {
+
+const userId = getStoredUserId();
+
+if (!userId) {
+    showLogin();
+    return;
+}
+
+showLoading("Restoring your session...");
+
+try {
+
+    /*
+     * There is no /me endpoint in the supplied backend.
+     * A normal authenticated GET therefore verifies the ID
+     * against currentUser($db), while also returning contacts.
+     */
+
+    const data = await apiFetch(API_URL);
+
+    /*
+     * The contact endpoint doesn't return the authenticated
+     * user's profile. The cookie itself gives us the ID.
+     *
+     * For the display name/role we retrieve users if the
+     * account is an admin. For normal users, retain a minimal
+     * session until the user performs a new login.
+     *
+     * If no profile can be recovered, require login.
+     */
+
+    if (!data || !Array.isArray(data.contacts)) {
+        throw new Error("Session could not be verified.");
+    }
+
+    contacts = data.contacts;
+
+    /*
+     * Normal authenticated contact GET proves the account
+     * exists and is not disabled. The backend doesn't expose
+     * currentUser's first/last name on this endpoint.
+     *
+     * Use the stored display information if available in
+     * sessionStorage from this browser tab.
+     */
+
+    const savedProfile =
+        sessionStorage.getItem("pcmUserProfile");
+
+    if (savedProfile) {
+
+        try {
+            currentUser = JSON.parse(savedProfile);
+        } catch (_) {
+            currentUser = null;
+        }
+    }
+
+    if (!currentUser) {
+
+        /*
+         * We know the ID is valid, but the backend does not
+         * expose a /me response. Logins should normally populate
+         * this profile.
+         *
+         * Try the admin endpoint. If it succeeds, locate the user.
+         */
+
+        try {
+
+            const userData = await apiFetch(
+                API_URL + "?users"
+            );
+
+            const found = (userData.users || []).find(
+                user => Number(user.id) === Number(userId)
+            );
+
+            if (found) {
+
+                currentUser = {
+                    id: Number(found.id),
+                    firstName: found.firstname || "",
+                    lastName: found.lastname || "",
+                    role: found.role || "User",
+                    isAdmin: found.role === "Admin"
+                };
+            }
+
+        } catch (_) {
+            // Expected for normal User accounts.
+        }
+    }
+
+    /*
+     * If profile data cannot be recovered, the cookie is still
+     * valid according to the backend. Show the dashboard with
+     * a generic name instead of falsely claiming authentication
+     * failed.
+     */
+
+    if (!currentUser) {
+
+        currentUser = {
+            id: Number(userId),
+            firstName: "User",
+            lastName: "",
+            role: "User",
+            isAdmin: false
+        };
+    }
+
+    sessionStorage.setItem(
+        "pcmUserProfile",
+        JSON.stringify(currentUser)
+    );
+
+    showDashboard();
+
+    await loadDashboard(false);
+
+} catch (error) {
+
+    clearAuthCookie();
+    sessionStorage.removeItem("pcmUserProfile");
+    currentUser = null;
+
+    showLogin();
+
+} finally {
+
+    hideLoading();
+}
+
+}
+
+/* =========================================================
+LOGOUT
+========================================================= */
+
+function logoutUser(showMessage = true) {
+
+clearAuthCookie();
+
+sessionStorage.removeItem("pcmUserProfile");
+
+currentUser = null;
+contacts = [];
+users = [];
+
+document.body.classList.remove("is-admin");
+
+document.getElementById("dashboardView").classList.add("d-none");
+document.getElementById("authView").classList.remove("d-none");
+
+showLogin();
+
+if (showMessage) {
+    showToast("You have been signed out.", "success");
+}
+
+}
+
+/* =========================================================
+VIEW TOGGLING
+========================================================= */
+
+function showLogin() {
+
+document
+    .getElementById("loginPanel")
+    .classList.remove("d-none");
+
+document
+    .getElementById("registerPanel")
+    .classList.add("d-none");
+
+}
+
+function showRegister() {
+
+document
+    .getElementById("loginPanel")
+    .classList.add("d-none");
+
+document
+    .getElementById("registerPanel")
+    .classList.remove("d-none");
+
+}
+
+function showDashboard() {
+
+document
+    .getElementById("authView")
+    .classList.add("d-none");
+
+document
+    .getElementById("dashboardView")
+    .classList.remove("d-none");
+
+updateUserInterface();
+
+}
+
+function updateUserInterface() {
+
+if (!currentUser) {
+    return;
+}
+
+const firstName = currentUser.firstName || "User";
+const fullName =
+    ((currentUser.firstName || "") + " " +
+     (currentUser.lastName || "")).trim();
+
+document.getElementById("dashboardFirstName").textContent =
+    firstName;
+
+document.getElementById("navUserName").textContent =
+    fullName || firstName;
+
+document.getElementById("navUserRole").textContent =
+    currentUser.role || "User";
+
+if (currentUser.isAdmin) {
+    document.body.classList.add("is-admin");
+    document
+        .getElementById("ownerFilterRow")
+        .classList.remove("d-none");
+} else {
+    document.body.classList.remove("is-admin");
+    document
+        .getElementById("ownerFilterRow")
+        .classList.add("d-none");
+}
+
+}
+
+/* =========================================================
+DASHBOARD LOADING
+========================================================= */
+
+async function loadDashboard(showSpinner = true) {
+
+if (showSpinner) {
+    showLoading("Loading your dashboard...");
+}
+
+try {
+
+    await loadContacts();
+
+    if (currentUser && currentUser.isAdmin) {
+
+        await loadUsers();
+
+        populateOwnerSelect();
+        populateContactOwnerSelect();
+    }
+
+} catch (error) {
+
+    showToast(error.message, "danger");
+
+} finally {
+
+    if (showSpinner) {
+        hideLoading();
+    }
+}
+
+}
+
+/* =========================================================
+CONTACT API
+========================================================= */
+
+async function loadContacts() {
+
+const params = new URLSearchParams();
+
+const search =
+    document.getElementById("contactSearch").value.trim();
+
+if (search) {
+    params.set("q", search);
+}
+
+/*
+ * Admin owner filtering:
+ *
+ * GET /api/index.php?owner=4&q=...
+ */
+
+if (currentUser && currentUser.isAdmin) {
+
+    const owner =
+        document.getElementById("contactOwnerSelect").value;
+
+    if (owner && Number(owner) > 0) {
+        params.set("owner", owner);
+    }
+}
+
+const query =
+    params.toString()
+        ? API_URL + "?" + params.toString()
+        : API_URL;
+
+const data = await apiFetch(query);
+
+contacts = Array.isArray(data.contacts)
+    ? data.contacts
+    : [];
+
+renderContacts();
+
+document.getElementById("contactCount").textContent =
+    contacts.length;
+
+}
+
+/* =========================================================
+CONTACT RENDERING
+========================================================= */
+
+function renderContacts() {
+
+const tbody =
+    document.getElementById("contactsTableBody");
+
+const mobile =
+    document.getElementById("contactsMobileList");
+
+const empty =
+    document.getElementById("contactsEmpty");
+
+tbody.innerHTML = "";
+mobile.innerHTML = "";
+
+if (contacts.length === 0) {
+
+    empty.classList.remove("d-none");
+
+    return;
+}
+
+empty.classList.add("d-none");
+
+for (const contact of contacts) {
+
+    const id = Number(contact.id);
+
+    const firstName = contact.firstname || "";
+    const lastName = contact.lastname || "";
+
+    const fullName =
+        (firstName + " " + lastName).trim() ||
+        "Unnamed Contact";
+
+    const initials =
+        getInitials(firstName, lastName);
+
+    const owner =
+        contact.owner || "";
+
+    const row = document.createElement("tr");
+
+    row.innerHTML = `
+        <td>
+            <div class="d-flex align-items-center gap-3">
+                <div class="avatar">${escapeHtml(initials)}</div>
+                <div>
+                    <div class="contact-name">
+                        ${escapeHtml(fullName)}
+                    </div>
+                    <div class="small muted">
+                        ID #${id}
+                    </div>
+                </div>
+            </div>
+        </td>
+
+        <td>
+            <a
+                class="text-decoration-none"
+                href="tel:${escapeAttribute(contact.phone || "")}"
+            >
+                <i class="bi bi-telephone me-1"></i>
+                ${escapeHtml(contact.phone || "—")}
+            </a>
+        </td>
+
+        <td>
+            <a
+                class="text-decoration-none"
+                href="mailto:${escapeAttribute(contact.email || "")}"
+            >
+                <i class="bi bi-envelope me-1"></i>
+                ${escapeHtml(contact.email || "—")}
+            </a>
+        </td>
+
+        <td class="admin-only">
+            ${escapeHtml(owner || "—")}
+        </td>
+
+        <td class="text-end">
+            <div class="btn-group btn-group-sm">
+
+                <button
+                    type="button"
+                    class="btn btn-outline-secondary"
+                    onclick="openContactModal(${id})"
+                    title="Edit contact"
+                >
+                    <i class="bi bi-pencil"></i>
+                </button>
+
+                <button
+                    type="button"
+                    class="btn btn-outline-danger"
+                    onclick="openDeleteModal(${id})"
+                    title="Delete contact"
+                >
+                    <i class="bi bi-trash3"></i>
+                </button>
+
+            </div>
+        </td>
+    `;
+
+    tbody.appendChild(row);
+
+    /*
+     * Mobile card
+     */
+
+    const card = document.createElement("div");
+
+    card.className =
+        "app-card p-3 mb-3";
+
+    card.innerHTML = `
+        <div class="d-flex align-items-start justify-content-between gap-3">
+
+            <div class="d-flex align-items-center gap-3">
+
+                <div class="avatar">
+                    ${escapeHtml(initials)}
+                </div>
+
+                <div>
+                    <div class="contact-name">
+                        ${escapeHtml(fullName)}
+                    </div>
+
+                    <div class="small muted">
+                        ${escapeHtml(owner || "")}
                     </div>
                 </div>
 
             </div>
+
+            <div class="btn-group btn-group-sm">
+
+                <button
+                    type="button"
+                    class="btn btn-outline-secondary"
+                    onclick="openContactModal(${id})"
+                >
+                    <i class="bi bi-pencil"></i>
+                </button>
+
+                <button
+                    type="button"
+                    class="btn btn-outline-danger"
+                    onclick="openDeleteModal(${id})"
+                >
+                    <i class="bi bi-trash3"></i>
+                </button>
+
+            </div>
+
         </div>
-    </main>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+
+        <div class="mt-3 small">
+
+            <div class="mb-2">
+                <i class="bi bi-telephone me-2 muted"></i>
+                <a
+                    href="tel:${escapeAttribute(contact.phone || "")}"
+                    class="text-decoration-none"
+                >
+                    ${escapeHtml(contact.phone || "—")}
+                </a>
+            </div>
+
+            <div>
+                <i class="bi bi-envelope me-2 muted"></i>
+                <a
+                    href="mailto:${escapeAttribute(contact.email || "")}"
+                    class="text-decoration-none text-break"
+                >
+                    ${escapeHtml(contact.email || "—")}
+                </a>
+            </div>
+
+        </div>
+    `;
+
+    mobile.appendChild(card);
+}
+
+}
+
+/* =========================================================
+CREATE / EDIT CONTACT
+========================================================= */
+
+function openContactModal(contactId = null) {
+
+const form =
+    document.getElementById("contactForm");
+
+form.reset();
+
+document.getElementById("contactId").value = "";
+
+const ownerField =
+    document.getElementById("contactOwnerField");
+
+/*
+ * Admins can select an owner only when creating.
+ * Editing still uses the existing owner's ID restriction
+ * supplied by the backend's ?owner= parameter.
+ */
+
+if (
+    currentUser &&
+    currentUser.isAdmin &&
+    !contactId
+) {
+
+    ownerField.classList.remove("d-none");
+
+    populateContactOwnerSelect();
+
+} else {
+
+    ownerField.classList.add("d-none");
+}
+
+if (contactId) {
+
+    const contact = contacts.find(
+        item => Number(item.id) === Number(contactId)
+    );
+
+    if (!contact) {
+        showToast("Contact could not be found.", "danger");
+        return;
+    }
+
+    document.getElementById("contactModalTitle").textContent =
+        "Edit Contact";
+
+    document.getElementById("contactId").value =
+        contact.id;
+
+    document.getElementById("contactFirstName").value =
+        contact.firstname || "";
+
+    document.getElementById("contactLastName").value =
+        contact.lastname || "";
+
+    document.getElementById("contactPhone").value =
+        contact.phone || "";
+
+    document.getElementById("contactEmail").value =
+        contact.email || "";
+
+} else {
+
+    document.getElementById("contactModalTitle").textContent =
+        "Add Contact";
+}
+
+contactModal.show();
+
+}
+
+async function saveContact() {
+
+const id =
+    document.getElementById("contactId").value;
+
+const firstname =
+    document.getElementById("contactFirstName").value.trim();
+
+const lastname =
+    document.getElementById("contactLastName").value.trim();
+
+const phone =
+    document.getElementById("contactPhone").value.trim();
+
+const email =
+    document.getElementById("contactEmail").value.trim();
+
+if (!firstname || !lastname || !phone || !email) {
+
+    showToast(
+        "Please fill in all contact fields.",
+        "warning"
+    );
+
+    return;
+}
+
+const payload = {
+    firstname: firstname,
+    lastname: lastname,
+    phone: phone,
+    email: email
+};
+
+/*
+ * Backend contact CREATE:
+ *
+ * POST /api/index.php
+ *
+ * firstname
+ * lastname
+ * phone
+ * email
+ */
+
+if (!id) {
+
+    let url = API_URL;
+
+    if (
+        currentUser &&
+        currentUser.isAdmin
+    ) {
+
+        const owner =
+            document.getElementById("contactOwner").value;
+
+        if (owner && Number(owner) > 0) {
+            url += "?owner=" + encodeURIComponent(owner);
+        }
+    }
+
+    setButtonLoading(
+        "saveContactButton",
+        true,
+        "Saving..."
+    );
+
+    try {
+
+        const data = await apiFetch(url, {
+            method: "POST",
+            body: JSON.stringify(payload)
+        });
+
+        contactModal.hide();
+
+        await loadContacts();
+
+        showToast(
+            data.message || "Contact created successfully.",
+            "success"
+        );
+
+    } catch (error) {
+
+        showToast(error.message, "danger");
+
+    } finally {
+
+        setButtonLoading(
+            "saveContactButton",
+            false,
+            '<i class="bi bi-check-lg me-1"></i>Save Contact'
+        );
+    }
+
+    return;
+}
+
+/*
+ * Backend contact UPDATE:
+ *
+ * PUT /api/index.php?id=4
+ *
+ * firstname
+ * lastname
+ * phone
+ * email
+ */
+
+let url =
+    API_URL +
+    "?id=" +
+    encodeURIComponent(id);
+
+/*
+ * Admins need ?owner=ID when editing a contact because the
+ * backend adds its owner filter to the SQL UPDATE.
+ */
+
+if (
+    currentUser &&
+    currentUser.isAdmin
+) {
+
+    const existingContact = contacts.find(
+        item => Number(item.id) === Number(id)
+    );
+
+    if (
+        existingContact &&
+        existingContact.userId
+    ) {
+
+        url +=
+            "&owner=" +
+            encodeURIComponent(existingContact.userId);
+    }
+}
+
+setButtonLoading(
+    "saveContactButton",
+    true,
+    "Saving..."
+);
+
+try {
+
+    const data = await apiFetch(url, {
+        method: "PUT",
+        body: JSON.stringify(payload)
+    });
+
+    contactModal.hide();
+
+    await loadContacts();
+
+    showToast(
+        data.message || "Contact updated successfully.",
+        "success"
+    );
+
+} catch (error) {
+
+    showToast(error.message, "danger");
+
+} finally {
+
+    setButtonLoading(
+        "saveContactButton",
+        false,
+        '<i class="bi bi-check-lg me-1"></i>Save Contact'
+    );
+}
+
+}
+
+/* =========================================================
+DELETE CONTACT
+========================================================= */
+
+function openDeleteModal(contactId) {
+
+document.getElementById("deleteContactId").value =
+    contactId;
+
+deleteModal.show();
+
+}
+
+async function confirmDeleteContact() {
+
+const contactId =
+    document.getElementById("deleteContactId").value;
+
+if (!contactId) {
+    return;
+}
+
+/*
+ * Backend:
+ *
+ * DELETE /api/index.php?id=4
+ */
+
+let url =
+    API_URL +
+    "?id=" +
+    encodeURIComponent(contactId);
+
+/*
+ * Admin DELETE also needs owner=ID because the backend
+ * adds its owner filter to the SQL DELETE.
+ */
+
+if (
+    currentUser &&
+    currentUser.isAdmin
+) {
+
+    const contact = contacts.find(
+        item => Number(item.id) === Number(contactId)
+    );
+
+    if (contact && contact.userId) {
+
+        url +=
+            "&owner=" +
+            encodeURIComponent(contact.userId);
+    }
+}
+
+try {
+
+    const data = await apiFetch(url, {
+        method: "DELETE"
+    });
+
+    deleteModal.hide();
+
+    await loadContacts();
+
+    showToast(
+        data.message || "Contact deleted successfully.",
+        "success"
+    );
+
+} catch (error) {
+
+    showToast(error.message, "danger");
+}
+
+}
+
+/* =========================================================
+ADMIN USER API
+========================================================= */
+
+async function loadUsers() {
+
+if (!currentUser || !currentUser.isAdmin) {
+    return;
+}
+
+const params = new URLSearchParams();
+
+const search =
+    document.getElementById("userSearch").value.trim();
+
+if (search) {
+    params.set("q", search);
+}
+
+const url =
+    params.toString()
+        ? API_URL + "?users&" + params.toString()
+        : API_URL + "?users";
+
+const data = await apiFetch(url);
+
+users = Array.isArray(data.users)
+    ? data.users
+    : [];
+
+renderUsers();
+
+document.getElementById("userCount").textContent =
+    users.length;
+
+populateOwnerSelect();
+populateContactOwnerSelect();
+
+}
+
+/* =========================================================
+ADMIN USER RENDERING
+========================================================= */
+
+function renderUsers() {
+
+const tbody =
+    document.getElementById("usersTableBody");
+
+const empty =
+    document.getElementById("usersEmpty");
+
+tbody.innerHTML = "";
+
+if (users.length === 0) {
+
+    empty.classList.remove("d-none");
+
+    return;
+}
+
+empty.classList.add("d-none");
+
+for (const user of users) {
+
+    const id = Number(user.id);
+
+    const firstName =
+        user.firstname || "";
+
+    const lastName =
+        user.lastname || "";
+
+    const fullName =
+        (firstName + " " + lastName).trim() ||
+        user.username ||
+        "User";
+
+    const initials =
+        getInitials(firstName, lastName);
+
+    const disabled =
+        user.isDisabled === true ||
+        Number(user.isDisabled) === 1;
+
+    const role =
+        user.role === "Admin"
+            ? "Admin"
+            : "User";
+
+    const row = document.createElement("tr");
+
+    row.innerHTML = `
+        <td>
+            <div class="d-flex align-items-center gap-3">
+
+                <div class="avatar">
+                    ${escapeHtml(initials)}
+                </div>
+
+                <div>
+                    <div class="fw-semibold">
+                        ${escapeHtml(fullName)}
+                    </div>
+
+                    <div class="small muted">
+                        ID #${id}
+                    </div>
+                </div>
+
+            </div>
+        </td>
+
+        <td>
+            <span class="muted">
+                ${escapeHtml(user.username || "—")}
+            </span>
+        </td>
+
+        <td>
+            <span class="badge rounded-pill ${
+                role === "Admin"
+                    ? "badge-soft-warning"
+                    : "badge-soft-primary"
+            }">
+                ${escapeHtml(role)}
+            </span>
+        </td>
+
+        <td>
+            <span class="badge rounded-pill ${
+                disabled
+                    ? "badge-soft-danger"
+                    : "badge-soft-success"
+            }">
+                ${
+                    disabled
+                        ? "Disabled"
+                        : "Active"
+                }
+            </span>
+        </td>
+
+        <td>
+            ${Number(user.contactCount || 0)}
+        </td>
+
+        <td class="text-end">
+            <button
+                type="button"
+                class="btn btn-sm btn-outline-secondary"
+                onclick="openUserModal(${id})"
+                title="Edit user"
+            >
+                <i class="bi bi-pencil"></i>
+            </button>
+        </td>
+    `;
+
+    tbody.appendChild(row);
+}
+
+}
+
+/* =========================================================
+ADMIN USER MODAL
+========================================================= */
+
+function openUserModal(userId = null) {
+
+document
+    .getElementById("userForm")
+    .reset();
+
+document.getElementById("managedUserId").value =
+    "";
+
+const newUserFields =
+    document.getElementById("newUserFields");
+
+const disabledGroup =
+    document.getElementById("managedDisabledGroup");
+
+const password =
+    document.getElementById("managedPassword");
+
+const passwordHelp =
+    document.getElementById("managedPasswordHelp");
+
+const title =
+    document.getElementById("userModalTitle");
+
+if (userId) {
+
+    const user = users.find(
+        item => Number(item.id) === Number(userId)
+    );
+
+    if (!user) {
+        showToast("User could not be found.", "danger");
+        return;
+    }
+
+    title.textContent = "Edit User";
+
+    document.getElementById("managedUserId").value =
+        user.id;
+
+    /*
+     * Backend PUT only accepts:
+     *
+     * password
+     * role
+     * isDisabled
+     *
+     * It does not update names or usernames.
+     */
+    newUserFields.classList.add("d-none");
+
+    disabledGroup.classList.remove("d-none");
+
+    password.required = false;
+
+    passwordHelp.textContent =
+        "Leave blank to keep the existing password.";
+
+    document.getElementById("managedRole").value =
+        user.role === "Admin"
+            ? "Admin"
+            : "User";
+
+    document.getElementById("managedDisabled").checked =
+        user.isDisabled === true ||
+        Number(user.isDisabled) === 1;
+
+} else {
+
+    title.textContent = "Create User";
+
+    newUserFields.classList.remove("d-none");
+
+    disabledGroup.classList.add("d-none");
+
+    password.required = true;
+
+    passwordHelp.textContent =
+        "Required when creating a new account.";
+}
+
+userModal.show();
+
+}
+
+async function saveUser() {
+
+const userId =
+    document.getElementById("managedUserId").value;
+
+const password =
+    document.getElementById("managedPassword").value;
+
+const role =
+    document.getElementById("managedRole").value;
+
+/*
+ * CREATE USER
+ *
+ * POST /api/index.php?users
+ *
+ * firstname
+ * lastname
+ * username
+ * password
+ * role
+ */
+
+if (!userId) {
+
+    const firstname =
+        document
+            .getElementById("managedFirstName")
+            .value
+            .trim();
+
+    const lastname =
+        document
+            .getElementById("managedLastName")
+            .value
+            .trim();
+
+    const username =
+        document
+            .getElementById("managedUsername")
+            .value
+            .trim();
+
+    if (!firstname || !lastname || !username || !password) {
+
+        showToast(
+            "Please fill in all required fields.",
+            "warning"
+        );
+
+        return;
+    }
+
+    const payload = {
+        firstname: firstname,
+        lastname: lastname,
+        username: username,
+        password: password,
+        role: role === "Admin"
+            ? "Admin"
+            : "User"
+    };
+
+    setButtonLoading(
+        "saveUserButton",
+        true,
+        "Creating..."
+    );
+
+    try {
+
+        const data = await apiFetch(
+            API_URL + "?users",
+            {
+                method: "POST",
+                body: JSON.stringify(payload)
+            }
+        );
+
+        userModal.hide();
+
+        await loadUsers();
+
+        showToast(
+            data.message || "User created successfully.",
+            "success"
+        );
+
+    } catch (error) {
+
+        showToast(error.message, "danger");
+
+    } finally {
+
+        setButtonLoading(
+            "saveUserButton",
+            false,
+            '<i class="bi bi-check-lg me-1"></i>Save User'
+        );
+    }
+
+    return;
+}
+
+/*
+ * UPDATE USER
+ *
+ * PUT /api/index.php?users&id=4
+ *
+ * Optional:
+ * password
+ * role
+ * isDisabled
+ */
+
+const isDisabled =
+    document.getElementById("managedDisabled").checked;
+
+const payload = {
+    role: role === "Admin"
+        ? "Admin"
+        : "User",
+
+    isDisabled: isDisabled
+};
+
+if (password.trim() !== "") {
+    payload.password = password;
+}
+
+setButtonLoading(
+    "saveUserButton",
+    true,
+    "Saving..."
+);
+
+try {
+
+    const url =
+        API_URL +
+        "?users&id=" +
+        encodeURIComponent(userId);
+
+    const data = await apiFetch(url, {
+        method: "PUT",
+        body: JSON.stringify(payload)
+    });
+
+    userModal.hide();
+
+    await loadUsers();
+
+    /*
+     * If the administrator disabled their own account,
+     * the next authenticated request will return 403.
+     */
+    if (
+        currentUser &&
+        Number(currentUser.id) === Number(userId) &&
+        isDisabled
+    ) {
+
+        logoutUser(false);
+
+        showToast(
+            "Your account was disabled.",
+            "warning"
+        );
+
+        return;
+    }
+
+    showToast(
+        data.message || "User updated successfully.",
+        "success"
+    );
+
+} catch (error) {
+
+    showToast(error.message, "danger");
+
+} finally {
+
+    setButtonLoading(
+        "saveUserButton",
+        false,
+        '<i class="bi bi-check-lg me-1"></i>Save User'
+    );
+}
+
+}
+
+/* =========================================================
+ADMIN OWNER SELECTS
+========================================================= */
+
+function populateOwnerSelect() {
+
+const select =
+    document.getElementById("contactOwnerSelect");
+
+if (!select) {
+    return;
+}
+
+const currentValue =
+    select.value || "0";
+
+select.innerHTML =
+    '<option value="0">All contacts</option>';
+
+for (const user of users) {
+
+    const option =
+        document.createElement("option");
+
+    option.value = user.id;
+
+    option.textContent =
+        (user.username || "User") +
+        " — " +
+        (user.firstname || "") +
+        " " +
+        (user.lastname || "");
+
+    select.appendChild(option);
+}
+
+if (
+    Array.from(select.options)
+        .some(option => option.value === currentValue)
+) {
+    select.value = currentValue;
+}
+
+}
+
+function populateContactOwnerSelect() {
+
+const select =
+    document.getElementById("contactOwner");
+
+if (!select) {
+    return;
+}
+
+const currentValue =
+    select.value;
+
+select.innerHTML =
+    '<option value="">Select an owner...</option>';
+
+for (const user of users) {
+
+    /*
+     * Don't hide disabled users from the list because the
+     * backend does not prohibit an admin from managing their
+     * existing contact records.
+     */
+
+    const option =
+        document.createElement("option");
+
+    option.value = user.id;
+
+    option.textContent =
+        (user.username || "User") +
+        " — " +
+        (
+            (user.firstname || "") +
+            " " +
+            (user.lastname || "")
+        ).trim();
+
+    select.appendChild(option);
+}
+
+if (
+    Array.from(select.options)
+        .some(option => option.value === currentValue)
+) {
+    select.value = currentValue;
+}
+
+}
+
+/* =========================================================
+SEARCH DEBOUNCING
+========================================================= */
+
+function debouncedContactSearch() {
+
+clearTimeout(contactSearchTimer);
+
+contactSearchTimer = setTimeout(() => {
+
+    loadContacts().catch(error => {
+        showToast(error.message, "danger");
+    });
+
+}, 300);
+
+}
+
+function debouncedUserSearch() {
+
+clearTimeout(userSearchTimer);
+
+userSearchTimer = setTimeout(() => {
+
+    loadUsers().catch(error => {
+        showToast(error.message, "danger");
+    });
+
+}, 300);
+
+}
+
+/* =========================================================
+UI HELPERS
+========================================================= */
+
+function showLoading(message = "Loading...") {
+
+document.getElementById("loadingText").textContent =
+    message;
+
+document
+    .getElementById("loadingOverlay")
+    .classList.add("show");
+
+}
+
+function hideLoading() {
+
+document
+    .getElementById("loadingOverlay")
+    .classList.remove("show");
+
+}
+
+function setButtonLoading(
+buttonId,
+loading,
+content
+) {
+
+const button =
+    document.getElementById(buttonId);
+
+if (!button) {
+    return;
+}
+
+if (loading) {
+
+    button.disabled = true;
+
+    button.dataset.originalContent =
+        button.innerHTML;
+
+    button.innerHTML = `
+        <span
+            class="spinner-border spinner-border-sm me-2"
+            role="status"
+        ></span>
+        ${content}
+    `;
+
+} else {
+
+    button.disabled = false;
+
+    button.innerHTML =
+        content ||
+        button.dataset.originalContent ||
+        "Save";
+}
+
+}
+
+function showToast(
+message,
+type = "info"
+) {
+
+const toastElement =
+    document.getElementById("appToast");
+
+const icon =
+    document.getElementById("toastIcon");
+
+const title =
+    document.getElementById("toastTitle");
+
+const body =
+    document.getElementById("toastMessage");
+
+const config = {
+    success: {
+        icon: "bi-check-circle-fill",
+        color: "text-success",
+        title: "Success"
+    },
+
+    danger: {
+        icon: "bi-exclamation-triangle-fill",
+        color: "text-danger",
+        title: "Error"
+    },
+
+    warning: {
+        icon: "bi-exclamation-circle-fill",
+        color: "text-warning",
+        title: "Attention"
+    },
+
+    info: {
+        icon: "bi-info-circle-fill",
+        color: "text-primary",
+        title: "Information"
+    }
+};
+
+const selected =
+    config[type] || config.info;
+
+icon.className =
+    "bi " +
+    selected.icon +
+    " " +
+    selected.color +
+    " me-2";
+
+title.textContent =
+    selected.title;
+
+body.textContent =
+    message;
+
+const toast =
+    bootstrap.Toast.getOrCreateInstance(
+        toastElement,
+        {
+            delay: 4500
+        }
+    );
+
+toast.show();
+
+}
+
+/* =========================================================
+SAFE OUTPUT HELPERS
+========================================================= */
+
+function escapeHtml(value) {
+
+return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+
+}
+
+function escapeAttribute(value) {
+
+return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+
+}
+
+function getInitials(firstName, lastName) {
+
+const first =
+    String(firstName || "").trim();
+
+const last =
+    String(lastName || "").trim();
+
+if (first && last) {
+    return (
+        first.charAt(0) +
+        last.charAt(0)
+    ).toUpperCase();
+}
+
+if (first) {
+    return first.substring(0, 2).toUpperCase();
+}
+
+if (last) {
+    return last.substring(0, 2).toUpperCase();
+}
+
+return "?";
+
+}
+
+/* =========================================================
+OPTIONAL HEALTH CHECK
+Not called automatically. Useful for debugging:
+checkApiHealth()
+========================================================= */
+
+async function checkApiHealth() {
+
+try {
+
+    const response =
+        await fetch(
+            API_URL + "?ping=1",
+            {
+                method: "GET",
+                credentials: "same-origin"
+            }
+        );
+
+    const data =
+        await response.json();
+
+    console.log(
+        "API health:",
+        data
+    );
+
+    return data;
+
+} catch (error) {
+
+    console.error(
+        "API health check failed:",
+        error
+    );
+
+    throw error;
+}
+
+}
+</script>
+
+</body> </html>
