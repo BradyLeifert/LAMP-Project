@@ -77,6 +77,14 @@
         padding: 1.5rem 2rem 2rem;
     }
 
+    #contact-manager{
+        color:#ffffff;
+    }
+
+    #delete-this-contact{
+        color:#dc3545;
+    }
+
     .form-control,
     .form-select {
         background-color: #0f172a;
@@ -212,7 +220,7 @@
     }
 
     .toast-body{
-        color:#ffffff;
+        color:#444444;
     }
 
     .loading-overlay {
@@ -483,7 +491,7 @@
             </span>
 
             <span>
-                <span class="fw-bold">Contact Manager</span>
+                <span class="fw-bold" id="contact-manager">Contact Manager</span>
                 <small class="d-none d-md-block muted">
                     Personal Contact Manager
                 </small>
@@ -1092,7 +1100,7 @@
                     <i class="bi bi-trash3-fill"></i>
                 </div>
 
-                <p class="mb-1 fw-semibold">
+                <p class="mb-1 fw-semibold" id="delete-this-contact">
                     Delete this contact?
                 </p>
 
