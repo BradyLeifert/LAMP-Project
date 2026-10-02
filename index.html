@@ -61,6 +61,10 @@
         padding: 2rem 1rem;
     }
 
+    .form-text{
+        color:#ffffff;
+    }
+
     .auth-card {
         width: 100%;
         max-width: 470px;
@@ -86,6 +90,14 @@
 
     #delete-this-contact{
         color:#dc3545;
+    }
+
+    #form-check-label{
+        color:#ffffff;
+    }
+
+    #managedPasswordHelp{
+        color:#ffffff;
     }
 
     .form-control,
@@ -258,6 +270,11 @@
 
     body.is-admin .admin-only.d-flex {
         display: flex !important;
+    }
+
+    body.is-admin th.admin-only,
+    body.is-admin td.admin-only {
+        display: table-cell !important;
     }
 
     .badge-soft-primary {
@@ -2932,7 +2949,7 @@ for (const user of users) {
 
     option.textContent =
         (user.username || "User") +
-        " — " +
+        " - " +
         (user.firstname || "") +
         " " +
         (user.lastname || "");
