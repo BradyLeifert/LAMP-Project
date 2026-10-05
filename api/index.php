@@ -408,7 +408,7 @@ switch($method){
         }
 
         $firstName = clean($body['firstname'] ?? '');
-        $profilepicture = clean($body['profilepicture'] ?? '');
+        $profilepicture = $body['profilepicture'] ?? '';
         $lastName  = clean($body['lastname'] ?? '');
         $phone     = clean($body['phone'] ?? '');
         $email     = clean($body['email'] ?? '');
@@ -424,10 +424,26 @@ switch($method){
             respond(400, ['error' => 'Please fill in all fields']);
         }
 
-        $stmt;
+        $stmt = $db->prepare(
+            'SELECT ID
+            FROM Contacts
+            WHERE ID = :contactId' . $ownerFilter . '
+            LIMIT 1'
+        );
+
+        $checkParams = $ownerParams;
+        $checkParams[':contactId'] = $contactId;
+
+        $stmt->execute($checkParams);
+
+        if (!$stmt->fetch()) {
+            respond(404, ['error' => 'Contact not found']);
+        }
+
         $params = $ownerParams;
 
         if ($profilepicture === '') {
+
             $stmt = $db->prepare(
                 'UPDATE Contacts
                 SET FirstName = :firstName,
@@ -438,13 +454,8 @@ switch($method){
                 WHERE ID = :contactId' . $ownerFilter
             );
 
-            $params[':firstName'] = $firstName;
-            $params[':lastName'] = $lastName;
-            $params[':phone'] = $phone;
-            $params[':email'] = $email;
-            $params[':favorite'] = $favorite;
-            $params[':contactId'] = $contactId;
         } else {
+
             $stmt = $db->prepare(
                 'UPDATE Contacts
                 SET FirstName = :firstName,
@@ -456,20 +467,17 @@ switch($method){
                 WHERE ID = :contactId' . $ownerFilter
             );
 
-            $params[':firstName'] = $firstName;
             $params[':profilepicture'] = $profilepicture;
-            $params[':lastName'] = $lastName;
-            $params[':phone'] = $phone;
-            $params[':email'] = $email;
-            $params[':favorite'] = $favorite;
-            $params[':contactId'] = $contactId;
         }
+
+        $params[':firstName'] = $firstName;
+        $params[':lastName'] = $lastName;
+        $params[':phone'] = $phone;
+        $params[':email'] = $email;
+        $params[':favorite'] = $favorite;
+        $params[':contactId'] = $contactId;
 
         $stmt->execute($params);
-
-        if ($stmt->rowCount() === 0) {
-            respond(404, ['error' => 'Contact not found']);
-        }
 
         respond(200, [
             'error' => '',
