@@ -2081,7 +2081,8 @@ PROFILE PICTURE
 
 function getContactProfilePicture(contact) {
 
-    return contact.profilepicture ||
+    return contact.pfp ||
+        contact.profilepicture ||
         contact.profilePicture ||
         contact.ProfilePicture ||
         "";
@@ -2097,6 +2098,7 @@ function profilePictureDataUrl(base64) {
         return base64;
     }
 
+    // Profile pictures are JPG files, so prepend the JPEG data URL prefix.
     return "data:image/jpeg;base64," + base64;
 }
 
