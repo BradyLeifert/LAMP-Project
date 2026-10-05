@@ -182,6 +182,19 @@
         color: #4f46e5;
     }
 
+    .favorite-btn {
+        min-width: 38px;
+    }
+
+    .favorite-btn.is-favorite {
+        color: #facc15;
+        border-color: #facc15;
+    }
+
+    .favorite-label {
+        cursor: pointer;
+    }
+
     .avatar {
         width: 38px;
         height: 38px;
@@ -345,6 +358,7 @@
         </p>
     </div>
 
+    <main>
     <div class="auth-body">
 
         <!-- Login -->
@@ -502,6 +516,7 @@
         </div>
 
     </div>
+    </main>
 </div>
 
 </div> <!-- ========================================================= DASHBOARD ========================================================= --> <div id="dashboardView" class="d-none">
@@ -889,6 +904,22 @@
                             class="form-control"
                             required
                         >
+                    </div>
+
+                    <div class="col-12">
+                        <div class="form-check">
+                            <input
+                                class="form-check-input"
+                                type="checkbox"
+                                id="contactFavorite"
+                            >
+                            <label
+                                class="form-check-label favorite-label"
+                                for="contactFavorite"
+                            >
+                                <i class="bi bi-star me-1"></i>Favorite contact
+                            </label>
+                        </div>
                     </div>
 
                     <div
@@ -1953,6 +1984,45 @@ document.getElementById("contactCount").textContent =
 }
 
 /* =========================================================
+CONTACT FAVORITES
+========================================================= */
+
+function favoriteStorageKey(contactId) {
+
+    const userId =
+        currentUser && currentUser.id
+            ? currentUser.id
+            : "unknown";
+
+    return "contactFavorite:" + userId + ":" + contactId;
+}
+
+function isContactFavorite(contact) {
+
+    if (contact.isFavorite !== undefined && contact.isFavorite !== null) {
+        return Boolean(Number(contact.isFavorite));
+    }
+
+    if (contact.IsFavorite !== undefined && contact.IsFavorite !== null) {
+        return Boolean(Number(contact.IsFavorite));
+    }
+
+    return localStorage.getItem(
+        favoriteStorageKey(contact.id)
+    ) === "1";
+}
+
+function setContactFavoriteLocal(contact, favorite) {
+
+    contact.isFavorite = favorite ? 1 : 0;
+
+    localStorage.setItem(
+        favoriteStorageKey(contact.id),
+        favorite ? "1" : "0"
+    );
+}
+
+/* =========================================================
 CONTACT RENDERING
 ========================================================= */
 
@@ -1995,6 +2065,9 @@ for (const contact of contacts) {
 
     const owner =
         contact.owner || "";
+
+    const isFavorite =
+        isContactFavorite(contact);
 
     const row = document.createElement("tr");
 
@@ -2039,6 +2112,16 @@ for (const contact of contacts) {
 
         <td class="text-end">
             <div class="btn-group btn-group-sm">
+
+                <button
+                    type="button"
+                    class="btn btn-outline-secondary favorite-btn ${isFavorite ? "is-favorite" : ""}"
+                    onclick="toggleFavorite(${id})"
+                    title="${isFavorite ? "Remove from favorites" : "Add to favorites"}"
+                    aria-label="${isFavorite ? "Remove from favorites" : "Add to favorites"}"
+                >
+                    <i class="bi ${isFavorite ? "bi-star-fill" : "bi-star"}"></i>
+                </button>
 
                 <button
                     type="button"
@@ -2095,6 +2178,16 @@ for (const contact of contacts) {
             </div>
 
             <div class="btn-group btn-group-sm">
+
+                <button
+                    type="button"
+                    class="btn btn-outline-secondary favorite-btn ${isFavorite ? "is-favorite" : ""}"
+                    onclick="toggleFavorite(${id})"
+                    title="${isFavorite ? "Remove from favorites" : "Add to favorites"}"
+                    aria-label="${isFavorite ? "Remove from favorites" : "Add to favorites"}"
+                >
+                    <i class="bi ${isFavorite ? "bi-star-fill" : "bi-star"}"></i>
+                </button>
 
                 <button
                     type="button"
@@ -2158,6 +2251,7 @@ const form =
 form.reset();
 
 document.getElementById("contactId").value = "";
+document.getElementById("contactFavorite").checked = false;
 
 const ownerField =
     document.getElementById("contactOwnerField");
@@ -2212,6 +2306,9 @@ if (contactId) {
     document.getElementById("contactEmail").value =
         contact.email || "";
 
+    document.getElementById("contactFavorite").checked =
+        isContactFavorite(contact);
+
 } else {
 
     document.getElementById("contactModalTitle").textContent =
@@ -2253,7 +2350,8 @@ const payload = {
     firstname: firstname,
     lastname: lastname,
     phone: phone,
-    email: email
+    email: email,
+    favorite: document.getElementById("contactFavorite").checked ? 1 : 0
 };
 
 /*
@@ -2376,6 +2474,17 @@ try {
         body: JSON.stringify(payload)
     });
 
+    const updatedContact = contacts.find(
+        item => Number(item.id) === Number(id)
+    );
+
+    if (updatedContact) {
+        setContactFavoriteLocal(
+            updatedContact,
+            payload.favorite === 1
+        );
+    }
+
     contactModal.hide();
 
     await loadContacts();
@@ -2396,6 +2505,85 @@ try {
         false,
         '<i class="bi bi-check-lg me-1"></i>Save Contact'
     );
+}
+
+}
+
+/* =========================================================
+TOGGLE FAVORITE
+========================================================= */
+
+async function toggleFavorite(contactId) {
+
+const contact = contacts.find(
+    item => Number(item.id) === Number(contactId)
+);
+
+if (!contact) {
+    return;
+}
+
+const favorite =
+    isContactFavorite(contact) ? 0 : 1;
+
+const payload = {
+    firstname: contact.firstname || "",
+    lastname: contact.lastname || "",
+    phone: contact.phone || "",
+    email: contact.email || "",
+    favorite: favorite
+};
+
+if (
+    !payload.firstname ||
+    !payload.lastname ||
+    !payload.phone ||
+    !payload.email
+) {
+    showToast(
+        "This contact is missing information required by the update endpoint.",
+        "warning"
+    );
+    return;
+}
+
+let url =
+    API_URL +
+    "?id=" +
+    encodeURIComponent(contactId);
+
+if (
+    currentUser &&
+    currentUser.isAdmin &&
+    contact.userId
+) {
+    url +=
+        "&owner=" +
+        encodeURIComponent(contact.userId);
+}
+
+try {
+
+    const data = await apiFetch(url, {
+        method: "PUT",
+        body: JSON.stringify(payload)
+    });
+
+    setContactFavoriteLocal(contact, favorite === 1);
+
+    renderContacts();
+
+    showToast(
+        data.message ||
+            (favorite === 1
+                ? "Contact added to favorites."
+                : "Contact removed from favorites."),
+        "success"
+    );
+
+} catch (error) {
+
+    showToast(error.message, "danger");
 }
 
 }
