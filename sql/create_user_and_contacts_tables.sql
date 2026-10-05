@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS `Users` (
 
 CREATE TABLE IF NOT EXISTS `Contacts` (
   `ID` int NOT NULL AUTO_INCREMENT,
+  `ProfilePicture` LONGBLOB NULL DEFAULT NULL,
   `UserID` int NOT NULL DEFAULT '0',
   `FirstName` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `LastName` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',

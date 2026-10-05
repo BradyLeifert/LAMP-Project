@@ -314,7 +314,8 @@ switch($method){
                        c.LastName AS lastname,
                        c.Phone AS phone,
                        c.Email AS email,
-                       c.IsFavorite AS isFavorite
+                       c.IsFavorite AS isFavorite,
+                       c.ProfilePicture AS pfp
                 FROM Contacts c
                 LEFT JOIN Users u ON u.ID = c.UserID
                 WHERE 1 = 1';
@@ -362,6 +363,7 @@ switch($method){
         $lastName = clean($body['lastname']);
         $phone = clean($body['phone']);
         $email = clean($body['email']);
+        $profilepicture = clean($body['profilepicture']);
 
         if($userId == '' || $firstName == '' || $lastName == ''|| $phone == ''|| $email == ''){
             respond(400, ['error' => 'Please fill in all fields']);
@@ -373,12 +375,13 @@ switch($method){
 
         // Insert contact into database
         $stmt = $db->prepare(
-            'INSERT INTO Contacts (UserID, FirstName, LastName, Phone, Email)
-            VALUES (:uid, :firstName, :lastName, :phone, :email)'
+            'INSERT INTO Contacts (UserID, ProfilePicture, FirstName, LastName, Phone, Email)
+            VALUES (:uid, :profilepicture, :firstName, :lastName, :phone, :email)'
         );
 
         $stmt->execute([
             ':uid' => $contactOwner,
+            ':profilepicture' => $profilepicture,
             ':firstName' => $firstName,
             ':lastName' => $lastName,
             ':phone' => $phone,
@@ -405,6 +408,7 @@ switch($method){
         }
 
         $firstName = clean($body['firstname'] ?? '');
+        $profilepicture = clean($body['profilepicture'] ?? '');
         $lastName  = clean($body['lastname'] ?? '');
         $phone     = clean($body['phone'] ?? '');
         $email     = clean($body['email'] ?? '');
@@ -420,23 +424,46 @@ switch($method){
             respond(400, ['error' => 'Please fill in all fields']);
         }
 
-        $stmt = $db->prepare(
-            'UPDATE Contacts
-            SET FirstName = :firstName,
-                LastName = :lastName,
-                Phone = :phone,
-                Email = :email,
-                IsFavorite = :favorite
-            WHERE ID = :contactId' . $ownerFilter
-        );
-
+        $stmt;
         $params = $ownerParams;
-        $params[':firstName'] = $firstName;
-        $params[':lastName'] = $lastName;
-        $params[':phone'] = $phone;
-        $params[':email'] = $email;
-        $params[':favorite'] = $favorite;
-        $params[':contactId'] = $contactId;
+
+        if ($profilepicture === '') {
+            $stmt = $db->prepare(
+                'UPDATE Contacts
+                SET FirstName = :firstName,
+                    LastName = :lastName,
+                    Phone = :phone,
+                    Email = :email,
+                    IsFavorite = :favorite
+                WHERE ID = :contactId' . $ownerFilter
+            );
+
+            $params[':firstName'] = $firstName;
+            $params[':lastName'] = $lastName;
+            $params[':phone'] = $phone;
+            $params[':email'] = $email;
+            $params[':favorite'] = $favorite;
+            $params[':contactId'] = $contactId;
+        } else {
+            $stmt = $db->prepare(
+                'UPDATE Contacts
+                SET FirstName = :firstName,
+                    ProfilePicture = :profilepicture,
+                    LastName = :lastName,
+                    Phone = :phone,
+                    Email = :email,
+                    IsFavorite = :favorite
+                WHERE ID = :contactId' . $ownerFilter
+            );
+
+            $params[':firstName'] = $firstName;
+            $params[':profilepicture'] = $profilepicture;
+            $params[':lastName'] = $lastName;
+            $params[':phone'] = $phone;
+            $params[':email'] = $email;
+            $params[':favorite'] = $favorite;
+            $params[':contactId'] = $contactId;
+        }
 
         $stmt->execute($params);
 
