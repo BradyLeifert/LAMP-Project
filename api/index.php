@@ -313,7 +313,8 @@ switch($method){
                        c.FirstName AS firstname,
                        c.LastName AS lastname,
                        c.Phone AS phone,
-                       c.Email AS email
+                       c.Email AS email,
+                       c.IsFavorite AS isFavorite
                 FROM Contacts c
                 LEFT JOIN Users u ON u.ID = c.UserID
                 WHERE 1 = 1';
@@ -407,8 +408,15 @@ switch($method){
         $lastName  = clean($body['lastname'] ?? '');
         $phone     = clean($body['phone'] ?? '');
         $email     = clean($body['email'] ?? '');
+        $favorite  = clean($body['favorite'] ?? '');
 
-        if ($firstName === '' || $lastName === '' || $phone === '' || $email === '') {
+        if ($favorite !== 0 && $favorite !== 1 && $favorite !== '0' && $favorite !== '1') {
+            respond(400, ['error' => 'favorite must be 0 or 1']);
+        }
+
+        $favorite = (int)$favorite;
+
+        if ($firstName === '' || $lastName === '' || $phone === '' || $email === '' || $favorite === '') {
             respond(400, ['error' => 'Please fill in all fields']);
         }
 
@@ -417,7 +425,8 @@ switch($method){
             SET FirstName = :firstName,
                 LastName = :lastName,
                 Phone = :phone,
-                Email = :email
+                Email = :email,
+                IsFavorite = :favorite
             WHERE ID = :contactId' . $ownerFilter
         );
 
@@ -426,6 +435,7 @@ switch($method){
         $params[':lastName'] = $lastName;
         $params[':phone'] = $phone;
         $params[':email'] = $email;
+        $params[':favorite'] = $favorite;
         $params[':contactId'] = $contactId;
 
         $stmt->execute($params);
