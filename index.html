@@ -2049,7 +2049,14 @@ if (contacts.length === 0) {
 
 empty.classList.add("d-none");
 
-for (const contact of contacts) {
+// Keep the existing contact order, but place favorite contacts first.
+const sortedContacts = [...contacts].sort((a, b) => {
+    const aFavorite = isContactFavorite(a) ? 1 : 0;
+    const bFavorite = isContactFavorite(b) ? 1 : 0;
+    return bFavorite - aFavorite;
+});
+
+for (const contact of sortedContacts) {
 
     const id = Number(contact.id);
 
