@@ -209,6 +209,26 @@
         flex-shrink: 0;
     }
 
+    .avatar img {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .profile-picture-preview {
+        width: 96px;
+        height: 96px;
+        border-radius: 50%;
+        object-fit: cover;
+        display: none;
+        border: 2px solid rgba(255,255,255,.15);
+    }
+
+    .profile-picture-preview.show {
+        display: block;
+    }
+
     .contact-name {
         font-weight: 600;
     }
@@ -906,6 +926,31 @@
                         >
                     </div>
 
+                    <div id="contactProfilePictureField" class="col-12">
+                        <label for="contactProfilePicture" class="form-label">
+                            Profile picture
+                        </label>
+
+                        <input
+                            type="file"
+                            id="contactProfilePicture"
+                            class="form-control"
+                            accept=".jpg,image/jpeg"
+                        >
+
+                        <div class="form-text">
+                            Optional when editing. JPG only, maximum 256x256 pixels.
+                        </div>
+
+                        <div class="mt-3">
+                            <img
+                                id="contactProfilePicturePreview"
+                                class="profile-picture-preview"
+                                alt="Profile picture preview"
+                            >
+                        </div>
+                    </div>
+
                     <div class="col-12">
                         <div class="form-check">
                             <input
@@ -1258,6 +1303,9 @@ let deleteModal;
 let contactSearchTimer = null;
 let userSearchTimer = null;
 
+let selectedProfilePictureBase64 = null;
+let profilePictureChanged = false;
+
 /* =========================================================
 INITIALIZATION
 ========================================================= */
@@ -1275,6 +1323,10 @@ userModal = new bootstrap.Modal(
 deleteModal = new bootstrap.Modal(
     document.getElementById("deleteModal")
 );
+
+document
+    .getElementById("contactProfilePicture")
+    .addEventListener("change", handleProfilePictureSelection);
 
 await restoreSession();
 
@@ -2024,6 +2076,134 @@ function setContactFavoriteLocal(contact, favorite) {
 }
 
 /* =========================================================
+PROFILE PICTURE
+========================================================= */
+
+function getContactProfilePicture(contact) {
+
+    return contact.profilepicture ||
+        contact.profilePicture ||
+        contact.ProfilePicture ||
+        "";
+}
+
+function profilePictureDataUrl(base64) {
+
+    if (!base64) {
+        return "";
+    }
+
+    if (base64.startsWith("data:image/")) {
+        return base64;
+    }
+
+    return "data:image/jpeg;base64," + base64;
+}
+
+function setProfilePicturePreview(base64) {
+
+    const preview =
+        document.getElementById("contactProfilePicturePreview");
+
+    const src = profilePictureDataUrl(base64);
+
+    if (src) {
+        preview.src = src;
+        preview.classList.add("show");
+    } else {
+        preview.removeAttribute("src");
+        preview.classList.remove("show");
+    }
+}
+
+function readProfilePicture(file) {
+
+    return new Promise((resolve, reject) => {
+
+        if (!file) {
+            resolve(null);
+            return;
+        }
+
+        const filename = file.name || "";
+
+        if (!filename.toLowerCase().endsWith(".jpg")) {
+            reject(new Error("Profile pictures must be .jpg files."));
+            return;
+        }
+
+        if (file.type && file.type !== "image/jpeg") {
+            reject(new Error("Profile pictures must be JPG images."));
+            return;
+        }
+
+        const reader = new FileReader();
+
+        reader.onload = () => {
+
+            const dataUrl = reader.result;
+            const image = new Image();
+
+            image.onload = () => {
+
+                if (image.width > 256 || image.height > 256) {
+                    reject(
+                        new Error("Profile pictures must be 256x256 pixels or smaller.")
+                    );
+                    return;
+                }
+
+                const commaIndex = dataUrl.indexOf(",");
+
+                if (commaIndex === -1) {
+                    reject(new Error("Could not read the profile picture."));
+                    return;
+                }
+
+                resolve(dataUrl.substring(commaIndex + 1));
+            };
+
+            image.onerror = () => {
+                reject(new Error("The selected file is not a valid JPG image."));
+            };
+
+            image.src = dataUrl;
+        };
+
+        reader.onerror = () => {
+            reject(new Error("Could not read the profile picture."));
+        };
+
+        reader.readAsDataURL(file);
+    });
+}
+
+async function handleProfilePictureSelection(event) {
+
+    const file = event.target.files[0];
+
+    if (!file) {
+        return;
+    }
+
+    try {
+        selectedProfilePictureBase64 =
+            await readProfilePicture(file);
+
+        profilePictureChanged = true;
+        setProfilePicturePreview(selectedProfilePictureBase64);
+
+    } catch (error) {
+
+        event.target.value = "";
+        selectedProfilePictureBase64 = null;
+        profilePictureChanged = false;
+        setProfilePicturePreview("");
+        showToast(error.message, "warning");
+    }
+}
+
+/* =========================================================
 CONTACT RENDERING
 ========================================================= */
 
@@ -2077,12 +2257,19 @@ for (const contact of sortedContacts) {
     const isFavorite =
         isContactFavorite(contact);
 
+    const profilePicture =
+        getContactProfilePicture(contact);
+
+    const avatarHtml = profilePicture
+        ? `<img src="${escapeAttribute(profilePictureDataUrl(profilePicture))}" alt="">`
+        : escapeHtml(initials);
+
     const row = document.createElement("tr");
 
     row.innerHTML = `
         <td>
             <div class="d-flex align-items-center gap-3">
-                <div class="avatar">${escapeHtml(initials)}</div>
+                <div class="avatar">${avatarHtml}</div>
                 <div>
                     <div class="contact-name">
                         ${escapeHtml(fullName)}
@@ -2260,6 +2447,10 @@ form.reset();
 
 document.getElementById("contactId").value = "";
 document.getElementById("contactFavorite").checked = false;
+document.getElementById("contactProfilePicture").value = "";
+selectedProfilePictureBase64 = null;
+profilePictureChanged = false;
+setProfilePicturePreview("");
 
 const ownerField =
     document.getElementById("contactOwnerField");
@@ -2269,6 +2460,15 @@ const ownerField =
  * Editing still uses the existing owner's ID restriction
  * supplied by the backend's ?owner= parameter.
  */
+
+const profilePictureField =
+    document.getElementById("contactProfilePictureField");
+
+if (contactId) {
+    profilePictureField.classList.remove("d-none");
+} else {
+    profilePictureField.classList.add("d-none");
+}
 
 if (
     currentUser &&
@@ -2317,6 +2517,11 @@ if (contactId) {
     document.getElementById("contactFavorite").checked =
         isContactFavorite(contact);
 
+    const existingProfilePicture =
+        getContactProfilePicture(contact);
+
+    setProfilePicturePreview(existingProfilePicture);
+
 } else {
 
     document.getElementById("contactModalTitle").textContent =
@@ -2362,6 +2567,21 @@ const payload = {
     favorite: document.getElementById("contactFavorite").checked ? 1 : 0
 };
 
+if (profilePictureChanged) {
+    payload.profilepicture = selectedProfilePictureBase64 || "";
+} else if (id) {
+    const existingContact = contacts.find(
+        item => Number(item.id) === Number(id)
+    );
+
+    const existingProfilePicture =
+        getContactProfilePicture(existingContact || {});
+
+    if (existingProfilePicture) {
+        payload.profilepicture = existingProfilePicture;
+    }
+}
+
 /*
  * Backend contact CREATE:
  *
@@ -2400,7 +2620,12 @@ if (!id) {
 
         const data = await apiFetch(url, {
             method: "POST",
-            body: JSON.stringify(payload)
+            body: JSON.stringify({
+                firstname: firstname,
+                lastname: lastname,
+                phone: phone,
+                email: email
+            })
         });
 
         contactModal.hide();
